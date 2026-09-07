@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="img-src 'self' https: data:;">
+  <title>火影忍者·活动日历</title>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/scroll.css"/>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/act/index.css"/>
+</head>
+<body>
+  <div class="container" id="container">
+    <div class="bg-mark">历</div>
+    <div class="rod"></div>
+
+    <header class="scroll-head">
+      <div class="seal">历</div>
+      <div class="head-text">
+        <h1>活动日历</h1>
+        <p>当前时间 {{nowTime}} · 进行中 {{list.length}} 个</p>
+      </div>
+    </header>
+
+    <div class="calendar">
+      <table class="cal-table">
+        <tr class="tr month-row">
+          {{each dateList m}}
+          <td colspan="{{m.dates.length}}" class="month">{{m.month}}月</td>
+          {{/each}}
+        </tr>
+        <tr class="tr date-row">
+          {{each dateList m}}{{each m.dates dd}}
+          <td class="date {{if dd.isToday}}today{{/if}}">
+            <span class="d-num">{{dd.d}}</span>
+            <span class="d-week">周{{dd.weekName}}</span>
+          </td>
+          {{/each}}{{/each}}
+        </tr>
+      </table>
+
+      <div class="bars">
+        {{each list a}}
+        <div class="bar-row">
+          <div class="bar {{if a.notStarted}}upcoming{{else if a.leftDays <= 3}}ending{{/if}}" style="margin-left:{{a.left}}%;width:{{a.width}}%">
+            {{if a.pic}}<div class="bar-bg" style="background-image:url('{{a.pic}}')"></div>{{/if}}
+            <div class="bar-info">
+              <strong>{{a.name}}</strong>
+              <span>{{a.label}}</span>
+            </div>
+          </div>
+        </div>
+        {{/each}}
+        <div class="now-line" style="left:{{nowLeft}}%"></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span class="lg lg-ending"></span>即将结束
+      <span class="lg lg-normal"></span>进行中
+      <span class="lg lg-upcoming"></span>未开始
+    </div>
+    <footer class="scroll-foot">
+      <span>hyrz-plugin</span>
+      <span class="foot-dot">·</span>
+      <span>数据来源官方活动日历</span>
+    </footer>
+    <div class="rod"></div>
+  </div>
+</body>
+</html>

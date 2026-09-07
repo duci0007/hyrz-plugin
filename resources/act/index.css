@@ -1,0 +1,218 @@
+﻿/* 活动日历 · 布局样式（基础卷轴样式见 ../scroll.css） */
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  width: 720px;
+}
+
+/* ===== 日历主体 ===== */
+.calendar {
+  position: relative;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.cal-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.cal-table .tr.month-row {
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.cal-table .month {
+  padding: 7px 0;
+  font-size: 14px;
+  font-weight: bold;
+  color: #ffd700;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cal-table .tr.date-row {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.cal-table .date {
+  padding: 6px 0 7px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cal-table .date .d-num {
+  display: block;
+  font-size: 15px;
+  font-weight: bold;
+  color: #c0c0d8;
+  line-height: 18px;
+}
+
+.cal-table .date .d-week {
+  display: block;
+  font-size: 11px;
+  color: #787898;
+  line-height: 14px;
+}
+
+.cal-table .date.today .d-num,
+.cal-table .date.today .d-week {
+  color: #1a1a2e;
+}
+
+.cal-table .date.today {
+  background: #ffd700;
+  border-color: #ffd700;
+}
+
+/* ===== 甘特条区域 ===== */
+.bars {
+  position: relative;
+  padding: 12px 0 10px;
+}
+
+.bar-row {
+  position: relative;
+  height: 52px;
+  margin-bottom: 9px;
+}
+
+.bar {
+  position: relative;
+  height: 52px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #2a2a48;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.bar.ending {
+  border-color: rgba(255, 107, 107, 0.65);
+}
+
+.bar.upcoming {
+  border-color: rgba(156, 204, 101, 0.6);
+}
+
+.bar-bg {
+  position: absolute;
+  inset: 0;
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+  background-position: right center;
+  opacity: 0.85;
+}
+
+.bar-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(20, 22, 45, 0.94) 0%, rgba(20, 22, 45, 0.82) 45%, rgba(20, 22, 45, 0.15) 100%);
+}
+
+.bar.ending .bar-bg::after {
+  background: linear-gradient(90deg, rgba(60, 20, 25, 0.94) 0%, rgba(60, 20, 25, 0.82) 45%, rgba(60, 20, 25, 0.15) 100%);
+}
+
+.bar.upcoming .bar-bg::after {
+  background: linear-gradient(90deg, rgba(22, 45, 25, 0.94) 0%, rgba(22, 45, 25, 0.82) 45%, rgba(22, 45, 25, 0.15) 100%);
+}
+
+.bar-info {
+  position: relative;
+  z-index: 2;
+  padding: 8px 12px;
+  border-left: 3px solid #ffd700;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.bar.ending .bar-info { border-left-color: #ff6b6b; }
+.bar.upcoming .bar-info { border-left-color: #9ccc65; }
+
+.bar-info strong {
+  font-size: 15px;
+  font-weight: bold;
+  color: #fff;
+  line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bar-info span {
+  font-size: 12px;
+  color: #b8b8d0;
+  line-height: 16px;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== 当前时间线 ===== */
+.now-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #ff6b6b;
+  box-shadow: 0 0 6px rgba(255, 107, 107, 0.8);
+  z-index: 10;
+}
+
+.now-line::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: -4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff6b6b;
+  box-shadow: 0 0 8px rgba(255, 107, 107, 0.9);
+}
+
+/* ===== 图例 ===== */
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 14px;
+  font-size: 12px;
+  color: #a0a0c0;
+}
+
+.legend .lg {
+  display: inline-block;
+  width: 14px;
+  height: 8px;
+  border-radius: 3px;
+  margin-left: 10px;
+}
+
+.legend .lg:first-child {
+  margin-left: 0;
+}
+
+.legend .lg-ending { background: #ff6b6b; }
+.legend .lg-normal { background: #ffd700; }
+.legend .lg-upcoming { background: #9ccc65; }
+
+.legend {
+  position: relative;
+  z-index: 1;
+}

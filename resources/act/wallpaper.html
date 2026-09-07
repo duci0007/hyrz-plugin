@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="img-src 'self' https: data:;">
+  <title>火影忍者·官方壁纸</title>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/scroll.css"/>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/act/wallpaper.css"/>
+</head>
+<body>
+  <div class="container" id="container">
+    <div class="bg-mark">绘</div>
+    <div class="rod"></div>
+
+    <header class="scroll-head">
+      <div class="seal">绘</div>
+      <div class="head-text">
+        <h1>官方壁纸</h1>
+        <p>{{updateTime}} · 共 {{list.length}} 张 · 发送 #火影壁纸+序号 获取</p>
+      </div>
+    </header>
+
+    <div class="wp-grid">
+      {{each list w idx}}
+      <div class="wp-item">
+        <div class="wp-num">{{idx + 1}}</div>
+        <img class="wp-icon" src="{{w.icon}}">
+        <div class="wp-title">{{w.title}}</div>
+        <div class="wp-meta">
+          <span class="wp-tag">{{w.tag}}</span>
+          <span class="wp-time">{{w.time}}</span>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+
+    <footer class="scroll-foot">
+      <span>hyrz-plugin</span>
+      <span class="foot-dot">·</span>
+      <span>数据来源官方壁纸站</span>
+    </footer>
+    <div class="rod"></div>
+  </div>
+</body>
+</html>

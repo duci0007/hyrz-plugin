@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="img-src 'self' https: data:;">
+  <title>火影忍者·帮助</title>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/scroll.css"/>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/help/index.css"/>
+</head>
+<body>
+<div class="container">
+  <!-- 背景水印 -->
+  <div class="bg-mark">卷</div>
+
+  <!-- 卷轴上轴杆 -->
+  <div class="rod"></div>
+
+  <!-- 卷首：印章 + 标题 -->
+  <header class="scroll-head center">
+    <div class="seal">火</div>
+    <div class="head-text">
+      <h1>火影忍者插件</h1>
+      <p>封印之书 · 命令卷轴</p>
+    </div>
+  </header>
+
+  {{each groups g}}
+  <section class="group">
+    <div class="group-title">
+      <div class="group-num"><span>{{g.num}}</span></div>
+      <h2 class="group-name">{{g.name}}</h2>
+      <div class="group-rule"></div>
+    </div>
+    <div class="cmds">
+      {{each g.items it}}
+      <div class="cmd-row">
+        <div class="cmd-icon">{{it.icon}}</div>
+        <div class="cmd-body">
+          <div class="cmd-main">
+            <span class="cmd-text">{{it.cmd}}</span>
+            {{if it.tag}}<span class="cmd-tag {{it.tagClass}}">{{it.tag}}</span>{{/if}}
+          </div>
+          <div class="cmd-desc">{{it.desc}}</div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+  </section>
+  {{/each}}
+
+  <!-- 卷尾 -->
+  <footer class="scroll-foot">
+    <span>共 {{totalCmd}} 条忍术指令</span>
+    <span class="foot-dot">·</span>
+    <span>{{updateTime}}</span>
+  </footer>
+
+  <!-- 卷轴下轴杆 -->
+  <div class="rod"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="img-src 'self' https: data:;">
+  <title>火影忍者·最近战绩</title>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/scroll.css"/>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/record/index.css"/>
+</head>
+<body>
+  <div class="container" id="container">
+    <div class="bg-mark">战</div>
+    <div class="rod"></div>
+
+    <header class="scroll-head">
+      <div class="seal">战</div>
+      <div class="head-text">
+        <h1>最近战绩</h1>
+        <p>{{info.vip}} · 战力 {{info.fight}}</p>
+      </div>
+      <div class="head-side">
+        <div class="online {{info.isOnline == 1 ? 'on' : 'off'}}">{{info.isOnline == 1 ? '在线' : '离线'}}</div>
+      </div>
+    </header>
+
+    <div class="section">
+      <div class="section-title">📊 近期概览 {{if rankMatches && rankMatches.season}}<span class="section-sub">{{rankMatches.season}}</span>{{/if}}</div>
+      <div class="season-stats">
+        <div class="s-stat"><span class="s-val">{{recentTotal}}</span><span class="s-label">总场次</span></div>
+        <div class="s-stat"><span class="s-val green">{{recentWins}}</span><span class="s-label">胜场</span></div>
+        <div class="s-stat"><span class="s-val red">{{recentLose}}</span><span class="s-label">败场</span></div>
+        <div class="s-stat"><span class="s-val gold">{{recentWinRate}}%</span><span class="s-label">胜率</span></div>
+      </div>
+      {{if rankMatches && rankMatches.highest}}
+      <div class="season-stats">
+        <div class="s-stat"><span class="s-val gold">{{rankMatches.highest}}</span><span class="s-label">本赛季最高分</span></div>
+        <div class="s-stat"><span class="s-val">{{rankMatches.total}}</span><span class="s-label">赛季场次</span></div>
+        <div class="s-stat"><span class="s-val green">{{rankMatches.win}}</span><span class="s-label">赛季胜场</span></div>
+        <div class="s-stat"><span class="s-val gold">{{rankMatches.winRate}}%</span><span class="s-label">赛季胜率</span></div>
+      </div>
+      {{/if}}
+    </div>
+
+    <div class="section">
+      <div class="section-title">📋 最近比赛</div>
+      <div class="match-list">
+        {{each matches m idx}}
+        <div class="match-item {{m.win ? 'win' : 'lose'}}">
+          <div class="match-result">{{m.result}}</div>
+          <div class="match-ninjas">
+            {{each m.ninjas n i2}}
+            <div class="match-ninja">
+              <img class="match-avatar" src="{{n.avatar}}">
+              <div class="match-ninja-name">{{n.name}}</div>
+            </div>
+            {{/each}}
+          </div>
+          <div class="match-meta">
+            <div class="match-type">{{m.type}}</div>
+            <div class="match-time">{{m.time}}</div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <footer class="scroll-foot">
+      <span>hyrz-plugin</span>
+      <span class="foot-dot">·</span>
+      <span>{{updateTime}}</span>
+    </footer>
+    <div class="rod"></div>
+  </div>
+</body>
+</html>

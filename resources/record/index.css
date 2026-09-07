@@ -1,0 +1,495 @@
+/* 个人面板/战绩 · 布局样式（基础卷轴样式见 ../scroll.css） */
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* 个人面板/战绩 · 布局样式（基础卷轴样式见 ../scroll.css） */
+
+.container {
+  width: 700px;
+}
+
+.online {
+  padding: 4px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: bold;
+}
+.online.on { background: rgba(76, 175, 80, 0.2); color: #66bb6a; border: 1px solid #66bb6a; }
+.online.off { background: rgba(158, 158, 158, 0.15); color: #9e9e9e; border: 1px solid #9e9e9e; }
+
+.role-card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  min-height: 180px;
+}
+
+.role-art-box {
+  position: relative;
+  width: 190px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.role-art {
+  max-width: 190px;
+  max-height: 230px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+}
+
+.role-info {
+  flex: 1;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.role-name {
+  font-size: 22px;
+  font-weight: bold;
+  color: #ffd700;
+  margin-bottom: 12px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.stat {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #8888aa;
+  margin-top: 2px;
+}
+
+.reg-time {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #7777aa;
+}
+
+.section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #ffd700;
+  margin-bottom: 10px;
+  border-left: 4px solid #ffd700;
+  padding-left: 10px;
+}
+
+.section-sub {
+  font-size: 13px;
+  color: #a0a0c0;
+  font-weight: normal;
+}
+
+.ninja-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ninja-item {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.ninja-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 215, 0, 0.5);
+  background: #000;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.ninja-detail {
+  flex: 1;
+  margin-left: 14px;
+}
+
+.ninja-name {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.ninja-stats {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 4px 0;
+}
+
+.win-rate {
+  font-size: 18px;
+  font-weight: bold;
+  color: #66bb6a;
+}
+
+.win-loss {
+  font-size: 12px;
+  color: #8888aa;
+}
+
+.proficient-bar {
+  height: 6px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.proficient-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffd700, #ff8c00);
+  border-radius: 3px;
+}
+
+.match-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.match-item {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 8px 14px;
+  border-left: 3px solid transparent;
+}
+
+.match-item.win { border-left-color: #66bb6a; }
+.match-item.lose { border-left-color: #ef5350; }
+
+.match-result {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+.match-item.win .match-result { background: rgba(76, 175, 80, 0.25); color: #66bb6a; }
+.match-item.lose .match-result { background: rgba(239, 83, 80, 0.2); color: #ef5350; }
+
+.match-ninjas {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  margin-left: 14px;
+  min-width: 0;
+}
+
+.match-ninja {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.match-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #000;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+.match-ninja-name {
+  font-size: 12px;
+  line-height: 1.35;
+  color: #c0c0d8;
+  overflow: hidden;
+  white-space: pre-line;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  word-break: break-all;
+}
+
+.match-meta {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.match-type {
+  font-size: 12px;
+  color: #8888aa;
+}
+
+.match-time {
+  font-size: 11px;
+  color: #666688;
+  margin-top: 2px;
+}
+
+/* ===== 属性面板（雷达图） ===== */
+.power-box {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.radar-svg {
+  flex-shrink: 0;
+}
+
+.radar-grid { fill: none; stroke: rgba(255, 255, 255, 0.12); }
+.radar-grid-outer { fill: none; stroke: rgba(255, 215, 0, 0.35); }
+.radar-axis { stroke: rgba(255, 255, 255, 0.1); }
+
+.radar-poly {
+  fill: rgba(255, 215, 0, 0.28);
+  stroke: #ffd700;
+  stroke-width: 1.5;
+}
+
+.radar-label {
+  fill: #c0c0d8;
+  font-size: 13px;
+}
+
+.power-list {
+  flex: 1;
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.power-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  background: rgba(0, 0, 0, 0.22);
+  border-radius: 6px;
+  padding: 6px 12px;
+}
+
+.power-name {
+  font-size: 13px;
+  color: #a0a0c0;
+}
+
+.power-value {
+  font-size: 15px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.power-rank {
+  font-size: 12px;
+  color: #8888aa;
+  text-align: right;
+}
+
+/* ===== 赛季战绩 ===== */
+.season-title {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.18), transparent);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #ffd700;
+  margin-bottom: 10px;
+}
+
+.season-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.s-stat {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  padding: 10px 6px;
+  text-align: center;
+}
+
+.s-val {
+  display: block;
+  font-size: 20px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.s-val.green { color: #66bb6a; }
+.s-val.red { color: #ef5350; }
+.s-val.gold { color: #ffd700; }
+
+.s-label {
+  display: block;
+  font-size: 12px;
+  color: #8888aa;
+  margin-top: 2px;
+}
+
+.season-sub-title {
+  font-size: 13px;
+  color: #a0a0c0;
+  margin: 12px 0 8px;
+}
+
+.before-ninja-list {
+  display: flex;
+  gap: 10px;
+}
+
+.before-ninja {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.ninja-avatar.sm {
+  width: 44px;
+  height: 44px;
+}
+
+.bn-detail {
+  flex: 1;
+  margin-left: 10px;
+  min-width: 0;
+}
+
+.bn-name {
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 1.35;
+  overflow: hidden;
+  white-space: pre-line;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  word-break: break-all;
+}
+
+.bn-stats {
+  font-size: 11px;
+  color: #8888aa;
+  margin: 2px 0 4px;
+}
+
+/* ===== 组织 ===== */
+.group-box {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.group-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #ffd700;
+  margin-bottom: 10px;
+}
+
+.group-stats {
+  display: flex;
+  gap: 10px;
+}
+
+.group-stat {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  padding: 10px 6px;
+  text-align: center;
+}
+
+.g-val {
+  display: block;
+  font-size: 17px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.g-val.gold { color: #ffd700; }
+
+.g-label {
+  display: block;
+  font-size: 12px;
+  color: #8888aa;
+  margin-top: 2px;
+}
+
+/* ===== 资产 ===== */
+.asset-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.asset {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 10px 4px;
+  text-align: center;
+}
+
+.a-val {
+  display: block;
+  font-size: 15px;
+  font-weight: bold;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.a-label {
+  display: block;
+  font-size: 11px;
+  color: #8888aa;
+  margin-top: 2px;
+}

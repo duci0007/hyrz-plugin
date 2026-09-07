@@ -1,0 +1,201 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* 金币助手 · 布局样式（基础卷轴样式见 ../scroll.css） */
+
+.container {
+  width: 700px;
+}
+
+/* 钱包 */
+.wallet-card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.wallet-item {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 16px 12px;
+  text-align: center;
+}
+
+.wallet-item.copper { border-color: rgba(205, 127, 50, 0.45); }
+.wallet-item.coin { border-color: rgba(255, 215, 0, 0.45); }
+.wallet-item.ticket { border-color: rgba(156, 204, 101, 0.45); }
+
+.w-val {
+  font-size: 26px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.wallet-item.copper .w-val { color: #e8a662; }
+.wallet-item.coin .w-val { color: #ffd700; }
+.wallet-item.ticket .w-val { color: #9ccc65; }
+
+.w-label {
+  font-size: 14px;
+  color: #a0a0c0;
+  margin-top: 4px;
+}
+
+/* 本周任务 */
+.task-list, .month-task-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.month-task-list {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.12);
+}
+
+.task-item {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.task-item.month { border: 1px dashed rgba(255, 215, 0, 0.25); }
+
+.task-name {
+  font-size: 15px;
+  color: #e8e8f0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.task-sub {
+  font-size: 12px;
+  color: #8ab4f8;
+}
+
+.task-desc {
+  font-size: 11px;
+  color: #808090;
+}
+
+.task-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.task-num {
+  font-size: 13px;
+  color: #a0a0c0;
+}
+
+.task-jb {
+  font-size: 15px;
+  font-weight: bold;
+  color: #ffd700;
+}
+
+/* 月度统计表 */
+.month-table {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.mt-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  padding: 9px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  margin-bottom: 2px;
+  border-radius: 8px;
+  font-size: 15px;
+  align-items: center;
+}
+
+.mt-row.mt-head {
+  background: rgba(255, 215, 0, 0.1);
+  color: #ffd700;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.mt-row.cur {
+  background: rgba(255, 215, 0, 0.08);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.mt-month { color: #e8e8f0; display: flex; align-items: center; gap: 6px; }
+.mt-fixed { color: #8ab4f8; text-align: right; }
+.mt-extra { color: #e8a662; text-align: right; }
+.mt-total { color: #ffd700; font-weight: bold; text-align: right; }
+.mt-head span { text-align: right; }
+.mt-head .mt-month { text-align: left; }
+
+.cur-tag {
+  font-style: normal;
+  font-size: 11px;
+  color: #0f3460;
+  background: #ffd700;
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+
+/* 流水明细 */
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.d-desc {
+  font-size: 15px;
+  color: #e8e8f0;
+}
+
+.d-meta {
+  font-size: 12px;
+  color: #808090;
+  margin-top: 3px;
+}
+
+.d-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.d-value {
+  font-size: 17px;
+  font-weight: bold;
+}
+
+.d-value.plus { color: #66bb6a; }
+.d-value.minus { color: #ef5350; }
+
+.d-after {
+  font-size: 12px;
+  color: #808090;
+  margin-top: 3px;
+}

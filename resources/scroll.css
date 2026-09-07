@@ -1,0 +1,164 @@
+/* ============================================================
+   火影忍者插件 · 封印之书卷轴基础样式（全页面共享）
+   各页面 CSS 在本文件之后引入，同名类可覆盖
+   ============================================================ */
+
+@font-face {
+  font-family: 'HYRZ-Font';
+  src: url('fonts/WangHanzongZhongLiShu.ttf') format('truetype');
+  font-display: block;
+}
+
+* { margin: 0; padding: 0; }
+
+body {
+  background: #1a1a2e;
+  font-family: 'HYRZ-Font', 'KaiTi', '楷体', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  color: #e8e8f0;
+}
+
+/* ===== 卷轴容器（宽度由各页面定义） ===== */
+.container {
+  box-sizing: border-box;
+  padding: 26px 28px 18px;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 540px 340px at 16% -6%, rgba(15, 52, 96, .6), transparent 65%),
+    radial-gradient(ellipse 480px 320px at 106% 110%, rgba(255, 157, 46, .05), transparent 60%),
+    linear-gradient(160deg, #16213e 0%, #1a1a2e 45%, #0f3460 100%);
+}
+
+/* 卷轴轴杆（页首页尾各一道） */
+.rod {
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 215, 0, .5) 16%,
+    rgba(255, 215, 0, .85) 50%,
+    rgba(255, 215, 0, .5) 84%,
+    transparent 100%);
+  box-shadow: 0 0 8px rgba(255, 215, 0, .22);
+}
+
+/* 水印字（每页专属：忍/影/战/财/历/报/绘） */
+.bg-mark {
+  position: absolute;
+  right: -48px;
+  top: 92px;
+  font-size: 400px;
+  line-height: 1;
+  color: rgba(255, 215, 0, .038);
+  transform: rotate(9deg);
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+}
+
+/* ===== 卷首 ===== */
+.scroll-head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 26px 0 24px;
+}
+
+.scroll-head.center { justify-content: center; }
+
+/* 朱红印章 */
+.seal {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: linear-gradient(150deg, #b3392f 0%, #8e2b23 100%);
+  box-shadow: 0 3px 12px rgba(179, 57, 47, .4), inset 0 0 0 2px rgba(245, 233, 208, .28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f5e9d0;
+  font-size: 32px;
+  transform: rotate(-4deg);
+}
+
+.head-text { flex: 1; min-width: 0; }
+
+.scroll-head.center .head-text { flex: 0; text-align: center; }
+
+.head-text h1 {
+  font-size: 32px;
+  font-weight: bold;
+  color: #ffd700;
+  letter-spacing: 3px;
+  text-shadow: 0 2px 10px rgba(255, 215, 0, .3);
+}
+
+.head-text p {
+  font-size: 14px;
+  color: #a0a0c0;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+/* 卷首右侧扩展位（在线状态/星级徽章等） */
+.head-side { flex-shrink: 0; }
+
+/* ===== 区块卡片 ===== */
+.section {
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 255, 255, .045);
+  border: 1px solid rgba(255, 255, 255, .09);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 15px;
+}
+
+/* 区块标题：金色 + 渐隐线 */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 20px;
+  font-weight: bold;
+  color: #ffd700;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.section-title::after {
+  content: '';
+  flex: 1;
+  min-width: 24px;
+  height: 1px;
+  margin-top: 4px;
+  background: linear-gradient(90deg, rgba(255, 215, 0, .35), transparent 85%);
+}
+
+.section-sub {
+  font-size: 13px;
+  font-weight: normal;
+  color: #a0a0c0;
+  letter-spacing: 0;
+}
+
+/* ===== 卷尾 ===== */
+.scroll-foot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 15px 0 18px;
+  font-size: 12.5px;
+  color: #7a7a9a;
+  letter-spacing: 1px;
+}
+
+.scroll-foot .foot-dot { color: #4a4a68; }

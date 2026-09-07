@@ -1,0 +1,127 @@
+/* 帮助页 · 命令卷轴布局（基础卷轴样式见 ../scroll.css） */
+
+.container {
+  width: 700px;
+}
+
+/* ===== 命令分组 ===== */
+.group {
+  position: relative;
+  z-index: 1;
+  background: rgba(255, 255, 255, .045);
+  border: 1px solid rgba(255, 255, 255, .09);
+  border-radius: 14px;
+  padding: 15px 18px 6px;
+  margin-bottom: 15px;
+}
+
+.group-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+/* 菱形数字印 */
+.group-num {
+  width: 27px;
+  height: 27px;
+  flex-shrink: 0;
+  margin: 3px 5px 3px 3px;
+  border: 1px solid rgba(255, 215, 0, .5);
+  background: rgba(255, 215, 0, .07);
+  transform: rotate(45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.group-num span {
+  transform: rotate(-45deg);
+  font-size: 13.5px;
+  color: #ffd700;
+}
+
+.group-name {
+  font-size: 21px;
+  font-weight: bold;
+  color: #ffd700;
+  letter-spacing: 2px;
+}
+
+.group-rule {
+  flex: 1;
+  height: 1px;
+  margin-top: 4px;
+  background: linear-gradient(90deg, rgba(255, 215, 0, .35), transparent 85%);
+}
+
+/* ===== 命令条目 ===== */
+.cmd-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 2px;
+}
+
+.cmd-row + .cmd-row {
+  border-top: 1px dashed rgba(255, 255, 255, .09);
+}
+
+/* 指令图标框 */
+.cmd-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 21px;
+  background: rgba(255, 215, 0, .06);
+  border: 1px solid rgba(255, 215, 0, .2);
+  border-radius: 11px;
+}
+
+.cmd-body { flex: 1; min-width: 0; }
+
+.cmd-main {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.cmd-text {
+  font-size: 19px;
+  font-weight: bold;
+  color: #ffd700;
+  letter-spacing: .5px;
+}
+
+/* 标签：推荐（火影橙） / 私聊（蓝） */
+.cmd-tag {
+  font-size: 11.5px;
+  line-height: 1;
+  padding: 4px 9px;
+  border-radius: 999px;
+  letter-spacing: 1px;
+}
+
+.cmd-tag.rec {
+  color: #ffb36b;
+  background: rgba(255, 157, 46, .12);
+  border: 1px solid rgba(255, 157, 46, .45);
+}
+
+.cmd-tag.pvt {
+  color: #8fb7e8;
+  background: rgba(143, 183, 232, .1);
+  border: 1px solid rgba(143, 183, 232, .38);
+}
+
+.cmd-desc {
+  font-size: 13.5px;
+  color: #a0a0c0;
+  margin-top: 4px;
+  line-height: 1.55;
+}

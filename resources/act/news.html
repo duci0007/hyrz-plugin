@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="img-src 'self' https: data:;">
+  <title>火影忍者·最新资讯</title>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/scroll.css"/>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/act/news.css"/>
+</head>
+<body>
+  <div class="container" id="container">
+    <div class="bg-mark">报</div>
+    <div class="rod"></div>
+
+    <header class="scroll-head">
+      <div class="seal">报</div>
+      <div class="head-text">
+        <h1>最新资讯</h1>
+        <p>{{updateTime}}</p>
+      </div>
+    </header>
+
+    <div class="news-list">
+      {{each list a idx}}
+      <div class="news-item">
+        <div class="news-main">
+          <div class="news-head">
+            <span class="news-cat">{{a.category}}</span>
+            {{if a.official}}<span class="news-official">官方</span>{{/if}}
+          </div>
+          <div class="news-title">{{a.title}}</div>
+          {{if a.summary}}<div class="news-summary">{{a.summary}}</div>{{/if}}
+          <div class="news-meta">
+            {{if a.authorAvatar}}<img class="news-avatar" src="{{a.authorAvatar}}">{{/if}}
+            <span class="news-author">{{a.author}}</span>
+            <span class="news-dot">·</span>
+            <span>{{a.time}}</span>
+            <span class="news-spacer"></span>
+            <span class="news-stat">👍 {{a.likes}}</span>
+            <span class="news-stat">💬 {{a.comments}}</span>
+          </div>
+        </div>
+        {{if a.pics.length}}
+        <img class="news-pic" src="{{a.pics[0]}}">
+        {{else if a.video}}
+        <div class="news-video">▶ 视频</div>
+        {{/if}}
+      </div>
+      {{/each}}
+    </div>
+
+    <footer class="scroll-foot">
+      <span>hyrz-plugin</span>
+      <span class="foot-dot">·</span>
+      <span>数据来源火影手游情报社</span>
+    </footer>
+    <div class="rod"></div>
+  </div>
+</body>
+</html>

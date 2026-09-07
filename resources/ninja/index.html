@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="img-src 'self' https: data:;">
+  <title>火影忍者·忍者图鉴</title>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/scroll.css"/>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/ninja/index.css"/>
+</head>
+<body>
+  <div class="container" id="container">
+    <div class="bg-mark">忍</div>
+    <div class="rod"></div>
+
+    <header class="scroll-head">
+      <div class="seal">忍</div>
+      <div class="head-text">
+        <h1>忍者图鉴</h1>
+        <p>{{name}} · {{updateTime}}</p>
+      </div>
+      <div class="head-side">
+        <div class="star-badge star-{{star}}">{{star}}</div>
+      </div>
+    </header>
+
+    <div class="ninja-card">
+      <div class="art-box">
+        <img class="art" src="{{art}}">
+      </div>
+      <div class="info">
+        <div class="name">{{name}}</div>
+        {{if tags.length}}
+        <div class="tags">
+          {{each tags t idx}}<span class="tag">{{t}}</span>{{/each}}
+        </div>
+        {{/if}}
+        <div class="meta">{{if gender}}{{gender}} · {{/if}}上线 {{releaseTime}}</div>
+        {{if highlight}}
+        <div class="highlight">{{highlight}}</div>
+        {{/if}}
+        {{if mine}}
+        <div class="mine-box">
+          {{if mine.possess}}
+          <div class="mine-title">✓ 已拥有</div>
+          <div class="mine-row">
+            <span class="mine-label">熟练度</span>
+            <div class="proficient-bar"><div class="proficient-fill" style="width: {{mine.proficientPct}}%"></div></div>
+            <span class="mine-val">{{mine.proficient}}</span>
+          </div>
+          <div class="mine-stats">
+            <div class="ms"><span class="ms-val">{{mine.winRate}}%</span><span class="ms-label">胜率</span></div>
+            <div class="ms"><span class="ms-val">{{mine.winCnt}}</span><span class="ms-label">胜场</span></div>
+            <div class="ms"><span class="ms-val">{{mine.fightCnt}}</span><span class="ms-label">总场次</span></div>
+          </div>
+          <div class="get-time">获得于 {{mine.getTime}}</div>
+          {{else}}
+          <div class="mine-title not">✗ 未拥有</div>
+          {{/if}}
+        </div>
+        {{/if}}
+      </div>
+    </div>
+
+    {{set skillSections = [
+      { key: 'ultimate', title: '💥 奥义' },
+      { key: 'skill1', title: '① 一技能' },
+      { key: 'skill2', title: '② 二技能' },
+      { key: 'normal', title: '👊 普攻' },
+      { key: 'special', title: '✦ 特殊机制' }
+    ] }}
+    {{each skillSections sec sidx}}
+    {{if skills[sec.key] && skills[sec.key].length}}
+    <div class="section">
+      <div class="section-title">{{sec.title}}</div>
+      <div class="skill-list">
+        {{each skills[sec.key] sk i}}
+        <div class="skill-item">
+          {{if sk.icon}}<img class="skill-icon" src="{{sk.icon}}">{{/if}}
+          <div class="skill-body">
+            <div class="skill-head">
+              <span class="skill-name">{{sk.name}}</span>
+              {{if sk.state}}<span class="skill-state">{{sk.state}}</span>{{/if}}
+            </div>
+            {{if sk.brief}}<div class="skill-brief">{{sk.brief}}</div>{{/if}}
+            {{if sk.desc}}<div class="skill-desc">{{sk.desc}}</div>{{/if}}
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+    {{/each}}
+
+    {{if secret.length || summon.length}}
+    <div class="section">
+      <div class="section-title">📜 推荐携带</div>
+      {{if secret.length}}
+      <div class="reco-box">
+        <div class="reco-label">秘卷</div>
+        <div class="reco-list">
+          {{each secret s idx}}
+          <div class="reco-item">
+            {{if s.icon}}<img class="reco-icon" src="{{s.icon}}">{{/if}}
+            <div class="reco-body">
+              <div class="reco-name">{{s.name}}</div>
+              {{if s.desc}}<div class="reco-desc">{{s.desc}}</div>{{/if}}
+            </div>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+      {{/if}}
+      {{if summon.length}}
+      <div class="reco-box">
+        <div class="reco-label">通灵</div>
+        <div class="reco-list">
+          {{each summon s idx}}
+          <div class="reco-item">
+            {{if s.icon}}<img class="reco-icon" src="{{s.icon}}">{{/if}}
+            <div class="reco-name">{{s.name}}</div>
+          </div>
+          {{/each}}
+        </div>
+      </div>
+      {{/if}}
+    </div>
+    {{/if}}
+
+    <footer class="scroll-foot">
+      <span>hyrz-plugin</span>
+      <span class="foot-dot">·</span>
+      <span>数据源官方忍者站</span>
+    </footer>
+    <div class="rod"></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="img-src 'self' https: data:;">
+  <title>火影忍者·个人面板</title>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/scroll.css"/>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/record/index.css"/>
+</head>
+<body>
+  <div class="container" id="container">
+    <div class="bg-mark">影</div>
+    <div class="rod"></div>
+
+    <header class="scroll-head">
+      <div class="seal">影</div>
+      <div class="head-text">
+        <h1>个人面板</h1>
+        <p>{{info.historyHighest}} · {{info.vip}}</p>
+      </div>
+      <div class="head-side">
+        <div class="online {{info.isOnline == 1 ? 'on' : 'off'}}">{{info.isOnline == 1 ? '在线' : '离线'}}</div>
+      </div>
+    </header>
+
+    <div class="role-card">
+      {{if info.showNinja}}
+      <div class="role-art-box">
+        <img class="role-art" src="{{info.showNinja.art}}">
+        <img class="role-avatar" src="{{info.showNinja.avatar}}">
+      </div>
+      <div class="role-info">
+        {{if info.showNinja.name}}<div class="role-name">{{info.showNinja.name}}</div>{{/if}}
+      {{else}}
+      <div class="role-info no-art">
+        <div class="role-name">火影忍者</div>
+      {{/if}}
+        <div class="stat-grid">
+          <div class="stat">
+            <div class="stat-value">{{info.fight}}</div>
+            <div class="stat-label">战力</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{{info.level}}</div>
+            <div class="stat-label">等级</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{{info.pvpTotalWin}}</div>
+            <div class="stat-label">总胜场</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{{info.pvpTopContinueWin}}</div>
+            <div class="stat-label">最高连胜</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{{info.pvpTotalFlawless}}</div>
+            <div class="stat-label">完胜场次</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{{ninjaNumber}}</div>
+            <div class="stat-label">登场忍者</div>
+          </div>
+        </div>
+        <div class="reg-time">注册于 {{info.registerTime}}</div>
+      </div>
+    </div>
+
+    {{if power}}
+    <div class="section">
+      <div class="section-title">💠 属性面板 {{if power.zoneRank}}<span class="section-sub">战力区排名 {{power.zoneRank}}</span>{{/if}}</div>
+      <div class="power-box">
+        <svg class="radar-svg" viewBox="0 0 240 260" width="230" height="250">
+          <polygon points="{{power.grid33}}" class="radar-grid"/>
+          <polygon points="{{power.grid66}}" class="radar-grid"/>
+          <polygon points="{{power.grid100}}" class="radar-grid-outer"/>
+          {{each power.axes a i}}
+          <line x1="120" y1="130" x2="{{a.x2}}" y2="{{a.y2}}" class="radar-axis"/>
+          {{/each}}
+          <polygon points="{{power.radar}}" class="radar-poly"/>
+          {{each power.axes a i}}
+          <text x="{{a.tx}}" y="{{a.ty}}" text-anchor="{{a.anchor}}" class="radar-label">{{a.label}}</text>
+          {{/each}}
+        </svg>
+        <div class="power-list">
+          {{each power.items p idx}}
+          <div class="power-row">
+            <span class="power-name">{{p.label}}</span>
+            <span class="power-value">{{p.fmt}}</span>
+          </div>
+          {{/each}}
+          {{if power.worldRank}}<div class="power-rank">世界排名 {{power.worldRank}}</div>{{/if}}
+        </div>
+      </div>
+    </div>
+    {{/if}}
+
+    {{if rankMatches}}
+    <div class="section">
+      <div class="section-title">🏆 {{rankMatches.season || '赛季'}} {{if rankMatches.highest}}<span class="section-sub">最高分 {{rankMatches.highest}}</span>{{/if}}</div>
+      {{if rankMatches.title}}<div class="season-title">🎖 {{rankMatches.title}}</div>{{/if}}
+      <div class="season-stats">
+        <div class="s-stat"><span class="s-val">{{rankMatches.total}}</span><span class="s-label">总场次</span></div>
+        <div class="s-stat"><span class="s-val green">{{rankMatches.win}}</span><span class="s-label">胜场</span></div>
+        <div class="s-stat"><span class="s-val red">{{rankMatches.fail}}</span><span class="s-label">败场</span></div>
+        <div class="s-stat"><span class="s-val gold">{{rankMatches.winRate}}%</span><span class="s-label">胜率</span></div>
+      </div>
+      {{if rankMatches.beforeNinja && rankMatches.beforeNinja.length}}
+      <div class="season-sub-title">上赛季常用忍者</div>
+      <div class="before-ninja-list">
+        {{each rankMatches.beforeNinja n idx}}
+        <div class="before-ninja">
+          <img class="ninja-avatar sm" src="{{n.avatar}}">
+          <div class="bn-detail">
+            {{if n.name}}<div class="bn-name">{{n.name}}</div>{{/if}}
+            <div class="bn-stats">{{n.winRate}}% · {{n.win}}胜/{{n.total}}场</div>
+            <div class="proficient-bar"><div class="proficient-fill" style="width: {{n.proficientPct}}%"></div></div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      {{/if}}
+    </div>
+    {{/if}}
+
+    <div class="section">
+      <div class="section-title">⚔ 常用忍者</div>
+      <div class="ninja-list">
+        {{each myNinja n idx}}
+        <div class="ninja-item">
+          <img class="ninja-avatar" src="{{n.avatar}}">
+          <div class="ninja-detail">
+            {{if n.name}}<div class="ninja-name">{{n.name}}</div>{{/if}}
+            <div class="ninja-stats">
+              <span class="win-rate">{{n.winRate}}%</span>
+              <span class="win-loss">{{n.winCnt}}胜 / {{n.fightCnt}}场</span>
+            </div>
+            <div class="proficient-bar">
+              <div class="proficient-fill" style="width: {{n.proficientPct}}%"></div>
+            </div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    {{if group}}
+    <div class="section">
+      <div class="section-title">🏯 组织</div>
+      <div class="group-box">
+        <div class="group-name">{{group.name}}</div>
+        <div class="group-stats">
+          <div class="group-stat"><span class="g-val gold">{{group.fc}}</span><span class="g-label">组织战力</span></div>
+          <div class="group-stat"><span class="g-val">{{group.memberNum}}</span><span class="g-label">成员数</span></div>
+          {{if group.zoneRank}}<div class="group-stat"><span class="g-val">{{group.zoneRank}}</span><span class="g-label">区排名</span></div>{{/if}}
+          {{if group.battleZoneRank}}<div class="group-stat"><span class="g-val">{{group.battleZoneRank}}</span><span class="g-label">战区排名</span></div>{{/if}}
+        </div>
+      </div>
+    </div>
+    {{/if}}
+
+    {{if assets}}
+    <div class="section">
+      <div class="section-title">💰 资产</div>
+      <div class="asset-grid">
+        <div class="asset"><span class="a-val">{{assets.copper}}</span><span class="a-label">铜币</span></div>
+        <div class="asset"><span class="a-val">{{assets.coin}}</span><span class="a-label">金币</span></div>
+        <div class="asset"><span class="a-val">{{assets.physical}}</span><span class="a-label">体力</span></div>
+        <div class="asset"><span class="a-val">{{assets.seniorRecruit}}</span><span class="a-label">高级招募</span></div>
+        <div class="asset"><span class="a-val">{{assets.limitedRecruit}}</span><span class="a-label">限定招募</span></div>
+        <div class="asset"><span class="a-val">{{assets.ninja}}</span><span class="a-label">忍者</span></div>
+        <div class="asset"><span class="a-val">{{assets.monster}}</span><span class="a-label">通灵兽</span></div>
+        <div class="asset"><span class="a-val">{{assets.secretScroll}}</span><span class="a-label">秘卷</span></div>
+        <div class="asset"><span class="a-val">{{assets.avatar}}</span><span class="a-label">头像框</span></div>
+        <div class="asset"><span class="a-val">{{assets.ticket}}</span><span class="a-label">门票</span></div>
+      </div>
+    </div>
+    {{/if}}
+
+    <footer class="scroll-foot">
+      <span>hyrz-plugin</span>
+      <span class="foot-dot">·</span>
+      <span>{{updateTime}}</span>
+    </footer>
+    <div class="rod"></div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,323 @@
+/* 忍者图鉴 · 布局样式（基础卷轴样式见 ../scroll.css） */
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  width: 700px;
+}
+
+.star-badge {
+  padding: 6px 18px;
+  border-radius: 10px;
+  font-size: 22px;
+  font-weight: bold;
+  border: 1px solid;
+}
+.star-SS { color: #ff9100; border-color: #ff9100; background: rgba(255, 145, 0, 0.15); text-shadow: 0 0 8px rgba(255, 145, 0, 0.5); }
+.star-S { color: #ffd700; border-color: #ffd700; background: rgba(255, 215, 0, 0.15); text-shadow: 0 0 8px rgba(255, 215, 0, 0.5); }
+.star-A { color: #b388ff; border-color: #b388ff; background: rgba(179, 136, 255, 0.15); }
+.star-B { color: #40c4ff; border-color: #40c4ff; background: rgba(64, 196, 255, 0.15); }
+.star-C { color: #9e9e9e; border-color: #9e9e9e; background: rgba(158, 158, 158, 0.15); }
+
+/* ===== 忍者卡片 ===== */
+.ninja-card {
+  display: flex;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+  min-height: 260px;
+}
+
+.art-box {
+  width: 200px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.art {
+  max-width: 200px;
+  max-height: 300px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.5));
+}
+
+.info {
+  flex: 1;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.name {
+  font-size: 24px;
+  font-weight: bold;
+  color: #ffd700;
+  margin-bottom: 10px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.tag {
+  font-size: 12px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  background: rgba(64, 196, 255, 0.15);
+  color: #40c4ff;
+  border: 1px solid rgba(64, 196, 255, 0.4);
+}
+
+.meta {
+  font-size: 12px;
+  color: #8888aa;
+  margin-bottom: 10px;
+}
+
+.highlight {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #c0c0d8;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+/* 我的数据 */
+.mine-box {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.mine-title {
+  font-size: 14px;
+  font-weight: bold;
+  color: #66bb6a;
+  margin-bottom: 8px;
+}
+
+.mine-title.not { color: #9e9e9e; }
+
+.mine-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.mine-label {
+  font-size: 12px;
+  color: #a0a0c0;
+  flex-shrink: 0;
+}
+
+.proficient-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.proficient-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ffd700, #ff8c00);
+  border-radius: 4px;
+}
+
+.mine-val {
+  font-size: 12px;
+  color: #ffd700;
+  flex-shrink: 0;
+}
+
+.mine-stats {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.ms {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 6px 4px;
+  text-align: center;
+}
+
+.ms-val {
+  display: block;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.ms-label {
+  display: block;
+  font-size: 11px;
+  color: #8888aa;
+  margin-top: 1px;
+}
+
+.get-time {
+  font-size: 11px;
+  color: #7777aa;
+  text-align: right;
+}
+
+/* ===== 技能区块 ===== */
+.section {
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 17px;
+  font-weight: bold;
+  color: #ffd700;
+  margin-bottom: 10px;
+  border-left: 4px solid #ffd700;
+  padding-left: 10px;
+}
+
+.skill-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skill-item {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.skill-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: #000;
+  object-fit: cover;
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  flex-shrink: 0;
+}
+
+.skill-body {
+  flex: 1;
+  margin-left: 12px;
+  min-width: 0;
+}
+
+.skill-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.skill-name {
+  font-size: 15px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.skill-state {
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 8px;
+  background: rgba(179, 136, 255, 0.2);
+  color: #b388ff;
+  border: 1px solid rgba(179, 136, 255, 0.4);
+}
+
+.skill-brief {
+  font-size: 12px;
+  color: #66bb6a;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.skill-desc {
+  font-size: 12px;
+  color: #a0a0c0;
+  line-height: 1.6;
+}
+
+/* ===== 推荐携带 ===== */
+.reco-box {
+  display: flex;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.reco-label {
+  font-size: 13px;
+  color: #ffd700;
+  font-weight: bold;
+  flex-shrink: 0;
+  padding-top: 8px;
+  width: 44px;
+}
+
+.reco-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reco-item {
+  display: flex;
+  align-items: center;
+}
+
+.reco-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #000;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+.reco-body {
+  flex: 1;
+  margin-left: 10px;
+  min-width: 0;
+}
+
+.reco-name {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.reco-desc {
+  font-size: 11px;
+  color: #8888aa;
+  line-height: 1.5;
+  margin-top: 2px;
+}
+
+.reco-item > .reco-name {
+  margin-left: 10px;
+}
+
+/* 卷尾由 scroll.css 的 .scroll-foot 统一 */
+

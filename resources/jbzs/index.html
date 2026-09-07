@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="img-src 'self' https: data:;">
+  <title>火影忍者·金币助手</title>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/scroll.css"/>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/jbzs/index.css"/>
+</head>
+<body>
+  <div class="container" id="container">
+    <div class="bg-mark">财</div>
+    <div class="rod"></div>
+
+    <header class="scroll-head">
+      <div class="seal">财</div>
+      <div class="head-text">
+        <h1>金币助手</h1>
+        <p>钱包余额 · 每周产出 · 月度统计 · 流水明细</p>
+      </div>
+    </header>
+
+    <div class="wallet-card">
+      <div class="wallet-item copper">
+        <div class="w-val">{{wallet.copperFmt}}</div>
+        <div class="w-label">铜币</div>
+      </div>
+      <div class="wallet-item coin">
+        <div class="w-val">{{wallet.coinFmt}}</div>
+        <div class="w-label">金币</div>
+      </div>
+      <div class="wallet-item ticket">
+        <div class="w-val">{{wallet.ticketFmt}}</div>
+        <div class="w-label">点券</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">📅 本周产出 {{if week.range}}<span class="section-sub">{{week.range}} · 已获 {{weekTotalJb}} 金币</span>{{/if}}</div>
+      <div class="task-list">
+        {{each week.tasks t idx}}
+        <div class="task-item">
+          <div class="task-name">
+            {{t.title}}{{if t.sub}}<span class="task-sub">{{t.sub}}</span>{{/if}}
+            {{if t.desc}}<span class="task-desc">{{t.desc}}</span>{{/if}}
+          </div>
+          <div class="task-stats">
+            {{if t.showType == '2'}}
+            <span class="task-num">{{t.takeJb}} 金币</span>
+            {{else}}
+            <span class="task-num">{{t.takeNum}} 次</span>
+            <span class="task-jb">{{t.takeJb}} 金币</span>
+            {{/if}}
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      {{if week.monthTasks.length}}
+      <div class="month-task-list">
+        {{each week.monthTasks t idx}}
+        <div class="task-item month">
+          <div class="task-name">
+            {{t.title}}{{if t.sub}}<span class="task-sub">{{t.sub}}</span>{{/if}}
+          </div>
+          <div class="task-stats">
+            <span class="task-num">{{t.takeNum}} 次</span>
+            <span class="task-jb">{{t.takeJb}} 金币</span>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      {{/if}}
+    </div>
+
+    {{if months.length}}
+    <div class="section">
+      <div class="section-title">📊 月度统计 <span class="section-sub">固定收益 + 额外金币</span></div>
+      <div class="month-table">
+        <div class="mt-row mt-head">
+          <span class="mt-month">月份</span>
+          <span class="mt-fixed">固定</span>
+          <span class="mt-extra">额外</span>
+          <span class="mt-total">合计</span>
+        </div>
+        {{each months m idx}}
+        <div class="mt-row {{idx == 0 ? 'cur' : ''}}">
+          <span class="mt-month">{{m.monthFmt}}{{if idx == 0}}<i class="cur-tag">当月</i>{{/if}}</span>
+          <span class="mt-fixed">{{m.fixed}}</span>
+          <span class="mt-extra">{{m.extra}}</span>
+          <span class="mt-total">{{m.total}}</span>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    {{if details.length}}
+    <div class="section">
+      <div class="section-title">🧾 金币流水 <span class="section-sub">最近 {{details.length}} 条</span></div>
+      <div class="detail-list">
+        {{each details x idx}}
+        <div class="detail-item">
+          <div class="d-left">
+            <div class="d-desc">{{x.desc}}</div>
+            <div class="d-meta">{{x.date}} · {{x.tag}}</div>
+          </div>
+          <div class="d-right">
+            <div class="d-value {{x.value > 0 ? 'plus' : 'minus'}}">{{x.value > 0 ? '+' : ''}}{{x.value}}</div>
+            <div class="d-after">余 {{x.afterFmt}}</div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+    {{/if}}
+
+    <footer class="scroll-foot">
+      <span>hyrz-plugin · {{updateTime}}</span>
+    </footer>
+    <div class="rod"></div>
+  </div>
+</body>
+</html>

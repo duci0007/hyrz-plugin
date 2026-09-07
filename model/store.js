@@ -1,0 +1,86 @@
+import fs from 'node:fs'
+import path from 'node:path'
+
+const DATA_DIR = path.resolve('./plugins/hyrz-plugin/data')
+const BIND_DIR = path.join(DATA_DIR, 'bindings') // 每个绑定的 QQ 一个文件：bindings/{qq}.json
+const LEGACY_FILE = path.join(DATA_DIR, 'bindings.json') // 旧版合并存储，启动时自动迁移
+
+/** 单个绑定文件路径 */
+function bindFile (userId) {
+  return path.join(BIND_DIR, `${String(userId)}.json`)
+}
+
+/** 旧版 bindings.json → bindings/{qq}.json 一次性迁移 */
+function migrateLegacy () {
+  if (!fs.existsSync(LEGACY_FILE)) return
+  try {
+    const data = JSON.parse(fs.readFileSync(LEGACY_FILE, 'utf8'))
+    fs.mkdirSync(BIND_DIR, { recursive: true })
+    for (const [qq, bind] of Object.entries(data)) {
+      const file = bindFile(qq)
+      if (!fs.existsSync(file)) fs.writeFileSync(file, JSON.stringify(bind, null, 2))
+    }
+    fs.renameSync(LEGACY_FILE, `${LEGACY_FILE}.bak`) // 迁移完成改名保留，防重复执行
+    global.logger?.mark?.(`[火影插件]绑定数据已迁移至 bindings/ 目录（${Object.keys(data).length} 条，旧文件备份为 bindings.json.bak）`)
+  } catch (err) {
+    global.logger?.error?.(`[火影插件]绑定数据迁移失败: ${err.message}`)
+  }
+}
+migrateLegacy()
+
+/**
+ * 从用户消息中提取 cookie 字段
+ * 支持格式：
+ *  - openid=xxx; acctype=qc; appid=1104307008; access_token=xxx
+ *  - openid=xxx access_token=xxx（换行/空格分隔）
+ *  - 直接粘贴 access_token 的值（32位hex）
+ */
+function parseCookie (text) {
+  const openid = text.match(/openid=([0-9A-Fa-f]+)/)?.[1]
+  let token = text.match(/access_token=([0-9A-Fa-f]+)/)?.[1]
+  if (!openid && !token) {
+    const m = text.trim().match(/^([0-9A-Fa-f]{32})$/)
+    if (m) token = m[1]
+  }
+  return { openid, token }
+}
+
+const Store = {
+  /** 获取绑定信息（读 bindings/{qq}.json） */
+  get (userId) {
+    try {
+      return JSON.parse(fs.readFileSync(bindFile(userId), 'utf8'))
+    } catch {
+      return null
+    }
+  },
+
+  /** 绑定/更新（写入 bindings/{qq}.json） */
+  set (userId, openid, token, appid, refresh_token) {
+    const old = this.get(userId) || {}
+    fs.mkdirSync(BIND_DIR, { recursive: true })
+    fs.writeFileSync(bindFile(userId), JSON.stringify({
+      openid,
+      access_token: token,
+      appid: appid || old.appid || '1104307008',
+      refresh_token: refresh_token || old.refresh_token || '',
+      bindTime: new Date().toLocaleString('zh-CN')
+    }, null, 2))
+  },
+
+  /** 解绑（删除 bindings/{qq}.json） */
+  del (userId) {
+    try {
+      fs.unlinkSync(bindFile(userId))
+    } catch { }
+  },
+
+  parseCookie,
+
+  /** 生成完整 Cookie 字符串 */
+  buildCookie (bind) {
+    return `openid=${bind.openid}; acctype=qc; appid=${bind.appid || '1104307008'}; access_token=${bind.access_token}`
+  }
+}
+
+export default Store
