@@ -7,8 +7,42 @@ const HOST = 'ulinkact.game.qq.com'
 const BASE_PATH = '/app/7335/1824be56cbeb29e7/index.php'
 const COMMON_QUERY = 'iActId=8265&sAppId=ULINK-AKKJ-784060&game=hyrz&eas_url=http%3A%2F%2Fwechatmini.qq.com%2Fhyrz%2Fwxc47b57c32a7fe64b%2Fpages%2Fscroll%2Fscroll%2F&e_code=0'
 
-/** AMS 金币助手（活动607093）: comm.ams.game.qq.com/ide/ */
-const AMS_HOST = 'comm.ams.game.qq.com'
+/** AMS 福利中心（活动576370）: x8m8.ams.game.qq.com/ams/ame/amesvr */
+const AMS_WELFARE_HOST = 'x8m8.ams.game.qq.com'
+const AMS_WELFARE_ACTIVITY_ID = '576370'
+const AMS_WELFARE_HEADERS = {
+  'Content-Type': 'application/x-www-form-urlencoded',
+  charset: 'utf-8',
+  Referer: 'https://servicewechat.com/wxc47b57c32a7fe64b/228/page-frame.html',
+  'User-Agent': 'Mozilla/5.0 (Linux; Android 16) AppleWebKit/537.36 Chrome/150.0.7871.189 Mobile Safari/537.36 MicroMessenger/8.0.77.3160 MiniProgramEnv/android'
+}
+
+/** AMS 福利中心签到/查询（x8m8.ams.game.qq.com） */
+function amsPost (flowId, cookie) {
+  const body = `iActivityId=${AMS_WELFARE_ACTIVITY_ID}&iFlowId=${flowId}&sOpenid=&openId=&g_tk=0`
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: AMS_WELFARE_HOST,
+      path: `/ams/ame/amesvr?ameVersion=0.3&sServiceType=hyrz&iActivityId=${AMS_WELFARE_ACTIVITY_ID}&game=hyrz&eas_url=http%3A%2F%2Fwechatmini.qq.com%2Fhyrz%2Fwxc47b57c32a7fe64b%2Fpages%2Fwelfaresite%2Fwelfaresite%2F&e_code=0`,
+      method: 'POST',
+      headers: { ...AMS_WELFARE_HEADERS, Cookie: cookie }
+    }, res => {
+      let d = ''
+      res.on('data', c => { d += c })
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(d))
+        } catch (e) {
+          reject(new Error(`AMS响应解析失败(${res.statusCode}): ${d.slice(0, 120)}`))
+        }
+      })
+    })
+    req.on('error', reject)
+    req.setTimeout(15000, () => { req.destroy(new Error('请求超时')) })
+    req.write(body)
+    req.end()
+  })
+}
 const AMS_HEADERS = {
   'Content-Type': 'application/x-www-form-urlencoded',
   'User-Agent': 'Mozilla/5.0 (Linux; Android 16) AppleWebKit/537.36 Chrome/150.0.7871.189 Mobile Safari/537.36',
@@ -669,6 +703,88 @@ const Api = {
     })
 
     return { page, list }
+  },
+
+  /* ========== 福利中心（每日签到 + 积分任务） ========== */
+
+  /** 查询今日任务状态（getTodayActInfo 仅查询，不触发签到；签到需走 amsSign） */
+  async getTodayActInfo (userId) {
+    const bind = Store.get(userId)
+    if (!bind) return { error: '未绑定，请先发送 #火影绑定 + cookie' }
+    const body = 'area=2&platId=1&partition=2175&roleId=1&iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0'
+    const res = await post('Welfare/getTodayActInfo', body, Store.buildCookie(bind))
+    if (res.iRet !== 0) return { error: `任务查询失败: ${res.sMsg || res.iRet}（cookie 可能已失效）` }
+    return res.jData
+  },
+
+  /** 任务完成上报（guestInfo 等"查看类"任务靠这个直接上报） */
+  async taskDone (userId, index) {
+    const bind = Store.get(userId)
+    if (!bind) return { error: '未绑定' }
+    const body = `index=${index}&iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0`
+    return await post('Index/taskDone', body, Store.buildCookie(bind))
+  },
+
+  /** 领取任务奖励（返回 jData=获得积分数）；必须带角色参数，否则报 1285 未查询到角色信息 */
+  async taskLotteryNow (userId, index) {
+    const bind = Store.get(userId)
+    if (!bind) return { error: '未绑定' }
+    const body = `index=${index}&area=2&platId=1&partition=2175&roleId=1&iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0`
+    return await post('Index/taskLotteryNow', body, Store.buildCookie(bind))
+  },
+
+  /** 浏览帖子（readArticle 任务） */
+  async articleDetail (userId, contentId) {
+    const bind = Store.get(userId)
+    if (!bind) return { error: '未绑定' }
+    const body = `contentId=${contentId}&qOrderBy=order&iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0`
+    return await post('Ugc/articleDetail', body, Store.buildCookie(bind))
+  },
+
+  /** 点赞（like 任务，op=1 点赞） */
+  async doLike (userId, contentId) {
+    const bind = Store.get(userId)
+    if (!bind) return { error: '未绑定' }
+    const body = `contentId=${contentId}&op=1&contentType=ugc_article&iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0`
+    return await post('User/doLike', body, Store.buildCookie(bind))
+  },
+
+  /** 村口动态列表（dynamicArticle 任务 + 提供点赞用的 contentId） */
+  async dynamicArticle (userId, page = 1) {
+    const bind = Store.get(userId)
+    if (!bind) return { error: '未绑定' }
+    const body = `page=${page}&pageSize=10&iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0`
+    const r = await post('Ugc/dynamicArticle', body, Store.buildCookie(bind))
+    if (r.iRet !== 0) return { error: `村口查询失败: ${r.sMsg || r.iRet}` }
+    return r.jData
+  },
+
+  /* ========== AMS 福利中心签到（x8m8.ams.game.qq.com） ========== */
+
+  /**
+   * 执行每日签到（AMS 活动576370）
+   * iFlowId=1083547: 签到
+   * iFlowId=1083576: 查询签到奖励
+   * @returns {{iRet:number, sMsg:string, gifts?:Array}} iRet=0 表示签到成功
+   */
+  async amsSign (userId) {
+    const bind = Store.get(userId)
+    if (!bind) return { iRet: -1, sMsg: '未绑定' }
+    const r = await amsPost(1083547, Store.buildCookie(bind))
+    if (r?.flowRet?.iRet !== '0') return { iRet: -1, sMsg: r?.flowRet?.sMsg || '签到失败' }
+    const modRet = r?.modRet?.jData
+    return { iRet: 0, sMsg: '签到成功', gifts: modRet?.gift_list?.sPackageName || '' }
+  },
+
+  /**
+   * 场景上报（UserSub/todaySceneReported）
+   * 签到/任务完成后调用，上报用户活跃场景
+   */
+  async todaySceneReported (userId) {
+    const bind = Store.get(userId)
+    if (!bind) return { iRet: -1, sMsg: '未绑定' }
+    const body = 'templateIds=OX8Wfsi-BFHscHy0NoWVl1Vkf08Pia4Wn97F3-KiXRw%3A1&scene=fl_auto&type=1&iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0'
+    return await post('UserSub/todaySceneReported', body, Store.buildCookie(bind))
   }
 }
 
