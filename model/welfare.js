@@ -53,7 +53,7 @@ const AUTO_TASKS = {
     }
   },
   dynamicArticle: async userId => {
-    await Api.dynamicArticle(userId)
+    await Api.taskDone(userId, 'dynamicArticle')
   },
   guestInfo: async userId => {
     await Api.taskDone(userId, 'guestInfo')
