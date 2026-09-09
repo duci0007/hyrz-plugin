@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="img-src 'self' https: data:;">
+  <title>火影忍者·每日福利</title>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/scroll.css"/>
+  <link rel="stylesheet" type="text/css" href="{{_res_path}}/welfare/index.css"/>
+</head>
+<body>
+  <div class="container" id="container">
+    <div class="bg-mark">福</div>
+    <div class="rod"></div>
+
+    <header class="scroll-head">
+      <div class="seal">福</div>
+      <div class="head-text">
+        <h1>每日福利</h1>
+        <p>签到 · 积分任务 · 自动完成</p>
+      </div>
+      <div class="head-side">
+        <div class="integral-box">
+          <div class="i-val">{{actIntegral}}</div>
+          <div class="i-label">活动积分</div>
+        </div>
+      </div>
+    </header>
+
+    {{if mode == 'run'}}
+    <div class="summary-card">
+      <div class="sum-item">
+        <div class="sum-val got">{{got}}</div>
+        <div class="sum-label">本次获得积分</div>
+      </div>
+      <div class="sum-sep"></div>
+      <div class="sum-item">
+        <div class="sum-val">{{doneCnt}}</div>
+        <div class="sum-label">已完成任务</div>
+      </div>
+      <div class="sum-sep"></div>
+      <div class="sum-item">
+        <div class="sum-val skip">{{skipCnt}}</div>
+        <div class="sum-label">需游戏内完成</div>
+      </div>
+    </div>
+    {{/if}}
+
+    <div class="section">
+      <div class="section-title">📜 任务明细 <span class="section-sub">{{updateTime}}</span></div>
+      <div class="welfare-list">
+        {{each tasks t idx}}
+        <div class="welfare-item {{t.status}}">
+          <div class="w-status">
+            {{if t.status == 'done'}}✔{{else if t.status == 'fail'}}✘{{else if t.status == 'skip'}}◌{{else if t.done}}✔{{else}}◌{{/if}}
+          </div>
+          <div class="w-main">
+            <div class="w-name">{{t.name}}</div>
+            {{if mode == 'run'}}
+            <div class="w-msg">{{t.msg}}</div>
+            {{else}}
+            <div class="w-msg">
+              {{if t.claimed}}奖励已领取{{else if t.done}}已完成待领取{{else}}进度 {{t.cur}}/{{t.target}}{{if !t.auto}} · 需游戏内{{/if}}{{/if}}
+            </div>
+            {{/if}}
+          </div>
+          <div class="w-point">+{{t.point}}<span class="w-unit">分</span></div>
+        </div>
+        {{/each}}
+      </div>
+    </div>
+
+    <footer class="scroll-foot">
+      <span>hyrz-plugin · {{updateTime}}</span>
+    </footer>
+    <div class="rod"></div>
+  </div>
+</body>
+</html>

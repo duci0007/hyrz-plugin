@@ -32,6 +32,15 @@ export class HyrzHelp extends plugin {
     },
     {
       num: '叁',
+      name: '每日福利',
+      items: [
+        { icon: '🎯', cmd: '#火影签到', desc: '自动完成每日任务：签到 / 浏览 / 点赞 / 领积分' },
+        { icon: '📋', cmd: '#火影任务', desc: '查看今日任务进度与积分' },
+        { icon: '🔔', cmd: '#火影签到推送开启/关闭', desc: '定时自动做任务并私发结果（默认早 8:30）' }
+      ]
+    },
+    {
+      num: '肆',
       name: '图鉴资讯',
       items: [
         { icon: '🗡️', cmd: '#火影忍者 + 名称', desc: '忍者图鉴：技能 / 推荐携带 / 个人数据，支持俗称' },
@@ -41,7 +50,7 @@ export class HyrzHelp extends plugin {
       ]
     },
     {
-      num: '肆',
+      num: '伍',
       name: '账号管理',
       items: [
         { icon: '✂️', cmd: '#火影解绑', desc: '解绑当前 cookie' },

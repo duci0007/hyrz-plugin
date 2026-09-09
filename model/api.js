@@ -19,7 +19,7 @@ const AMS_WELFARE_HEADERS = {
 
 /** AMS 福利中心签到/查询（x8m8.ams.game.qq.com） */
 function amsPost (flowId, cookie) {
-  const body = `iActivityId=${AMS_WELFARE_ACTIVITY_ID}&iFlowId=${flowId}&sOpenid=&openId=&g_tk=0`
+  const body = `iActivityId=${AMS_WELFARE_ACTIVITY_ID}&iFlowId=${flowId}&sOpenid=&openId=&g_tk=1842395457`
   return new Promise((resolve, reject) => {
     const req = https.request({
       hostname: AMS_WELFARE_HOST,
@@ -212,17 +212,37 @@ function buildRadar (pw) {
   }
 }
 
+function loginStateHint (message) {
+  return `${message}（登录态可能已失效，请重新发送 #火影登录；不会自动重试操作）`
+}
+
 const Api = {
-  /** 查询角色战绩信息（以 cookie 身份为准，roleId 等参数服务端忽略） */
+  /** 查询角色战绩信息（角色由绑定文件里的 partition 决定，缺失时自动同步角色列表） */
   async getCharacterInfo (userId) {
-    const bind = Store.get(userId)
+    let bind = Store.get(userId)
     if (!bind) return { error: '未绑定，请先发送 #火影绑定 + cookie' }
 
-    const body = 'area=2&platId=1&partition=2175&roleId=1&cmd=&matchId=&iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0'
-    const res = await post('CharacterInfo/getCharacterInfo', body, Store.buildCookie(bind))
-    if (res.iRet !== 0) {
-      return { error: `接口返回错误: ${res.sMsg || res.iRet}（cookie 可能已失效，请重新抓包绑定）` }
+    // 绑定后从未同步过角色 → 先拉角色列表写入 partition
+    if (!bind.partition) {
+      await Api.syncUserRole(userId)
+      bind = Store.get(userId) || bind
     }
+
+    const body = `area=2&platId=1&partition=${bind.partition || 2175}&roleId=${bind.roleId || 1}&cmd=&matchId=&iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0`
+    let res = await post('CharacterInfo/getCharacterInfo', body, Store.buildCookie(bind))
+    if (res.iRet !== 0) {
+      return { error: loginStateHint(`接口返回错误: ${res.sMsg || res.iRet}`) }
+    }
+
+    // 角色未同步到活动系统（cardRole missing data）→ 重新同步后重试一次
+    if (res.jData?.cardRole?.code !== 0) {
+      const ok = await Api.syncUserRole(userId)
+      if (ok) {
+        const retry = await post('CharacterInfo/getCharacterInfo', `area=2&platId=1&partition=${Store.get(userId).partition}&roleId=${Store.get(userId).roleId || 1}&cmd=&matchId=&iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0`, Store.buildCookie(Store.get(userId)))
+        if (retry.iRet === 0 && retry.jData?.cardRole?.code === 0) res = retry
+      }
+    }
+
     const d = res.jData
     const info = d.cardRole?.sourceInfo || {}
     const myNinja = (d.myNinja?.sourceInfo?.list || []).map(n => ({
@@ -451,7 +471,7 @@ const Api = {
     // 1. 主态初始化（chart 252291）
     const init = await amsIde(252291, 'KMSGvn', '', cookie)
     if (init.iRet !== 0 || !init.jData) {
-      return { error: `金币助手接口返回错误: ${init.sMsg || init.iRet}（cookie 可能已失效）` }
+      return { error: loginStateHint(`金币助手接口返回错误: ${init.sMsg || init.iRet}`) }
     }
     const d = init.jData
 
@@ -707,13 +727,47 @@ const Api = {
 
   /* ========== 福利中心（每日签到 + 积分任务） ========== */
 
+  /**
+   * AMS 角色列表（活动576370 iFlowId=1143943）
+   * 返回该账号全部游戏角色：[{ Partition, Gid(roleId), CharacName(URL编码), Level, LastLoginTime, ... }]
+   * 首次调用会把角色同步进活动系统，之后 ULINK 的 CharacterInfo 才能按 partition 查到数据
+   */
+  async getRoleList (bind) {
+    try {
+      const body = 'iActivityId=576370&iFlowId=1143943&sOpenid=&openId=&sArea=2&g_tk=1842395457'
+      const r = await amsPost(body, Store.buildCookie(bind))
+      return r?.modRet?.jData?.recentRoleList || []
+    } catch {
+      return []
+    }
+  },
+
+  /**
+   * 同步角色：拉取角色列表并默认选中等级最高的角色写入绑定文件
+   * @returns 同步到的角色对象；无角色/失败返回 null
+   */
+  async syncUserRole (userId) {
+    const bind = Store.get(userId)
+    if (!bind) return null
+    const roles = await Api.getRoleList(bind)
+    if (!roles.length) return null
+    const pick = [...roles].sort((a, b) =>
+      (Number(b.Level) || 0) - (Number(a.Level) || 0) ||
+      (Number(b.LastLoginTime) || 0) - (Number(a.LastLoginTime) || 0)
+    )[0]
+    const roleName = decodeURIComponent(pick.CharacName || '')
+    Store.setRole(userId, { partition: pick.Partition, roleId: pick.Gid, roleName, roleLevel: pick.Level })
+    global.logger?.mark?.(`[火影插件]用户${userId}角色已同步: ${roleName}（${pick.Partition}区 ${pick.Level}级）`)
+    return { partition: pick.Partition, roleId: pick.Gid, roleName, roleLevel: pick.Level }
+  },
+
   /** 查询今日任务状态（getTodayActInfo 仅查询，不触发签到；签到需走 amsSign） */
   async getTodayActInfo (userId) {
     const bind = Store.get(userId)
     if (!bind) return { error: '未绑定，请先发送 #火影绑定 + cookie' }
-    const body = 'area=2&platId=1&partition=2175&roleId=1&iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0'
+    const body = `area=2&platId=1&partition=${bind.partition || 2175}&roleId=${bind.roleId || 1}&iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0`
     const res = await post('Welfare/getTodayActInfo', body, Store.buildCookie(bind))
-    if (res.iRet !== 0) return { error: `任务查询失败: ${res.sMsg || res.iRet}（cookie 可能已失效）` }
+    if (res.iRet !== 0) return { error: loginStateHint(`任务查询失败: ${res.sMsg || res.iRet}`) }
     return res.jData
   },
 
@@ -729,7 +783,7 @@ const Api = {
   async taskLotteryNow (userId, index) {
     const bind = Store.get(userId)
     if (!bind) return { error: '未绑定' }
-    const body = `index=${index}&area=2&platId=1&partition=2175&roleId=1&iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0`
+    const body = `index=${index}&area=2&platId=1&partition=${bind.partition || 2175}&roleId=${bind.roleId || 1}&iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0`
     return await post('Index/taskLotteryNow', body, Store.buildCookie(bind))
   },
 

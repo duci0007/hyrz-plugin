@@ -55,17 +55,60 @@ const Store = {
     }
   },
 
-  /** 绑定/更新（写入 bindings/{qq}.json） */
+  /** 绑定/更新（写入 bindings/{qq}.json，保留 welfarePush 等扩展字段；新凭据未提供 refresh_token 时清空旧值） */
   set (userId, openid, token, appid, refresh_token) {
     const old = this.get(userId) || {}
     fs.mkdirSync(BIND_DIR, { recursive: true })
     fs.writeFileSync(bindFile(userId), JSON.stringify({
+      ...old,
       openid,
       access_token: token,
       appid: appid || old.appid || '1104307008',
-      refresh_token: refresh_token || old.refresh_token || '',
+      refresh_token: refresh_token || '',
       bindTime: new Date().toLocaleString('zh-CN')
     }, null, 2))
+  },
+
+  /** 设置/取消每日福利推送开关（写入绑定文件的 welfarePush 字段） */
+  setWelfarePush (userId, on) {
+    const bind = this.get(userId)
+    if (!bind) return false
+    bind.welfarePush = !!on
+    fs.mkdirSync(BIND_DIR, { recursive: true })
+    fs.writeFileSync(bindFile(userId), JSON.stringify(bind, null, 2))
+    return true
+  },
+
+  /** 写入角色信息（partition/roleId/角色名/等级），由角色列表同步产生 */
+  setRole (userId, { partition, roleId, roleName, roleLevel }) {
+    const bind = this.get(userId)
+    if (!bind) return false
+    fs.mkdirSync(BIND_DIR, { recursive: true })
+    fs.writeFileSync(bindFile(userId), JSON.stringify({
+      ...bind,
+      partition: String(partition || bind.partition || ''),
+      roleId: String(roleId ?? bind.roleId ?? ''),
+      roleName: roleName || bind.roleName || '',
+      roleLevel: roleLevel ?? bind.roleLevel ?? '',
+      roleSyncTime: new Date().toLocaleString('zh-CN')
+    }, null, 2))
+    return true
+  },
+
+  /** 列出所有开启福利推送的用户 QQ */
+  listWelfarePush () {
+    try {
+      return fs.readdirSync(BIND_DIR)
+        .filter(f => f.endsWith('.json'))
+        .map(f => f.replace(/.json$/, ''))
+        .filter(qq => {
+          try {
+            return JSON.parse(fs.readFileSync(path.join(BIND_DIR, f), 'utf8')).welfarePush
+          } catch { return false }
+        })
+    } catch {
+      return []
+    }
   },
 
   /** 解绑（删除 bindings/{qq}.json） */

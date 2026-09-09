@@ -1,0 +1,140 @@
+/* 每日福利页 · 卷轴布局（基础样式见 ../scroll.css） */
+
+.container {
+  width: 700px;
+}
+
+/* 卷首右侧积分展示 */
+.integral-box {
+  text-align: center;
+  background: rgba(255, 215, 0, .06);
+  border: 1px solid rgba(255, 215, 0, .22);
+  border-radius: 10px;
+  padding: 8px 16px;
+}
+
+.integral-box .i-val {
+  font-size: 26px;
+  font-weight: bold;
+  color: #ffd700;
+  text-shadow: 0 2px 8px rgba(255, 215, 0, .3);
+}
+
+.integral-box .i-label {
+  font-size: 11.5px;
+  color: #a0a0c0;
+  margin-top: 2px;
+  letter-spacing: 1px;
+}
+
+/* 执行结果汇总卡 */
+.summary-card {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  background: linear-gradient(150deg, rgba(255, 215, 0, .07), rgba(255, 255, 255, .03));
+  border: 1px solid rgba(255, 215, 0, .18);
+  border-radius: 14px;
+  padding: 16px 12px;
+  margin-bottom: 15px;
+}
+
+.sum-item { flex: 1; text-align: center; }
+
+.sum-val {
+  font-size: 30px;
+  font-weight: bold;
+  color: #ffd700;
+  text-shadow: 0 2px 10px rgba(255, 215, 0, .25);
+}
+
+.sum-val.got { color: #7ee08a; text-shadow: 0 2px 10px rgba(126, 224, 138, .25); }
+.sum-val.skip { font-size: 24px; color: #a0a0c0; }
+
+.sum-label {
+  font-size: 12px;
+  color: #a0a0c0;
+  margin-top: 4px;
+  letter-spacing: 1px;
+}
+
+.sum-sep {
+  width: 1px;
+  height: 44px;
+  background: linear-gradient(180deg, transparent, rgba(255, 215, 0, .3), transparent);
+}
+
+/* 任务列表 */
+.welfare-list { display: flex; flex-direction: column; gap: 8px; }
+
+.welfare-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .035);
+  border: 1px solid rgba(255, 255, 255, .06);
+}
+
+.welfare-item.done { border-color: rgba(126, 224, 138, .18); }
+.welfare-item.fail { border-color: rgba(230, 90, 90, .25); }
+.welfare-item.skip { opacity: .62; }
+
+/* 状态图标 */
+.w-status {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 14px;
+  border: 1.5px solid;
+}
+
+.welfare-item.done .w-status { color: #7ee08a; border-color: rgba(126, 224, 138, .55); background: rgba(126, 224, 138, .1); }
+.welfare-item.fail .w-status { color: #e65a5a; border-color: rgba(230, 90, 90, .55); background: rgba(230, 90, 90, .1); }
+.welfare-item.skip .w-status { color: #8a8aa8; border-color: rgba(138, 138, 168, .4); background: rgba(138, 138, 168, .08); }
+
+.w-main { flex: 1; min-width: 0; }
+
+.w-name {
+  font-size: 15.5px;
+  color: #e8e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.w-msg {
+  font-size: 12.5px;
+  color: #8a8aa8;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.welfare-item.fail .w-msg { color: #d08080; }
+
+/* 积分 */
+.w-point {
+  flex-shrink: 0;
+  font-size: 17px;
+  font-weight: bold;
+  color: #ffd700;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.w-unit {
+  font-size: 11px;
+  font-weight: normal;
+  color: #a0a0c0;
+}

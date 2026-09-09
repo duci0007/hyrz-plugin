@@ -3,9 +3,8 @@ import WebLogin from '../model/weblogin.js'
 /**
  * 火影网页扫码登录服务（挂载于 Yunzai express）
  * 路由: /hyrz/login/:token           登录页
- *       /hyrz/login/:token/create   创建扫码会话
- *       /hyrz/login/:token/qr       二维码图片
- *       /hyrz/login/:token/status   轮询状态
+ *       /hyrz/login/:token/qr       本次二维码图片
+ *       /hyrz/login/:token/status   本次会话状态
  */
 
 const PAGE_HTML = `<!DOCTYPE html>
@@ -45,12 +44,6 @@ const PAGE_HTML = `<!DOCTYPE html>
   .status.warn { color: #ffb84d; }
   .status.err { color: #ff7a6b; }
   .tip { font-size: 11.5px; color: #8a7546; line-height: 1.7; }
-  .btn {
-    margin-top: 14px; padding: 10px 26px; border: none; border-radius: 999px;
-    background: linear-gradient(135deg, #c8871f, #8f5a12); color: #fff8e6;
-    font-size: 14px; font-weight: 600; cursor: pointer; display: none;
-  }
-  .btn:active { opacity: .85; }
   .ok-info { text-align: left; margin-top: 16px; display: none; }
   .ok-info .row {
     display: flex; justify-content: space-between; gap: 10px; padding: 8px 10px;
@@ -79,40 +72,28 @@ const PAGE_HTML = `<!DOCTYPE html>
     </div>
   </div>
   <div class="status" id="status">正在获取二维码...</div>
-  <button class="btn" id="btn" onclick="restart()">刷新二维码</button>
   <div class="ok-info" id="okInfo">
     <div class="row"><b>游戏昵称</b><span id="iNick"></span></div>
     <div class="row"><b>openid</b><span id="iOpenid"></span></div>
-    <div class="row"><b>access_token</b><span id="iToken"></span></div>
   </div>
   <div class="tip">请使用<strong>手机 QQ</strong> 扫码（登录的是游戏对应的 QQ 号）<br>扫码即视为同意将登录态用于机器人查询</div>
 </div>
 <script>
 const TOKEN = location.pathname.split('/')[3] || '';
-let sid = null, timer = null, stopped = false;
+let timer = null, stopped = false;
 
 const $ = id => document.getElementById(id);
 
-async function createSession() {
+function loadSession() {
   stopped = false;
   $('spin').style.display = 'block';
   $('mask').classList.remove('show');
-  $('btn').style.display = 'none';
   $('okInfo').style.display = 'none';
-  $('status').textContent = '正在获取二维码...';
+  $('status').textContent = '正在加载本次二维码...';
   $('status').className = 'status';
-  try {
-    const r = await fetch('/hyrz/login/' + TOKEN + '/create', { cache: 'no-store' });
-    const j = await r.json();
-    if (j.code !== 0) throw new Error(j.msg || '会话创建失败');
-    sid = j.sid;
-    $('qr').src = '/hyrz/login/' + TOKEN + '/qr?sid=' + sid + '&t=' + Date.now();
-    $('status').textContent = '请用手机 QQ 扫码';
-    startPoll();
-  } catch (e) {
-    $('spin').style.display = 'none';
-    showError(e.message);
-  }
+  $('qr').src = '/hyrz/login/' + TOKEN + '/qr?t=' + Date.now();
+  $('status').textContent = '请用手机 QQ 扫码';
+  startPoll();
 }
 
 function startPoll() {
@@ -125,9 +106,9 @@ function stopPoll() {
 }
 
 async function poll() {
-  if (!sid || stopped) return;
+  if (stopped) return;
   try {
-    const r = await fetch('/hyrz/login/' + TOKEN + '/status?sid=' + sid, { cache: 'no-store' });
+    const r = await fetch('/hyrz/login/' + TOKEN + '/status', { cache: 'no-store' });
     const j = await r.json();
     if (j.state === 'waiting') return;
     if (j.state === 'scanned') {
@@ -139,10 +120,9 @@ async function poll() {
     if (j.state === 'expired' || j.state === 'gone') {
       stopPoll();
       $('spin').style.display = 'none';
-      $('status').textContent = '二维码已过期';
+      $('status').textContent = '本次二维码已过期，请重新发送 #火影登录 获取新码';
       $('status').className = 'status warn';
-      showMask('⌛', '二维码已过期');
-      $('btn').style.display = 'inline-block';
+      showMask('⌛', '二维码已过期，请重新发送 #火影登录');
       return;
     }
     if (j.state === 'error') {
@@ -159,7 +139,6 @@ async function poll() {
       $('status').className = 'status';
       $('iNick').textContent = j.nickname || j.qqNick || '-';
       $('iOpenid').textContent = j.openid || '-';
-      $('iToken').textContent = j.access_token || '-';
       $('okInfo').style.display = 'block';
       return;
     }
@@ -176,11 +155,9 @@ function showError(msg) {
   showMask('❌', msg);
   $('status').textContent = msg;
   $('status').className = 'status err';
-  $('btn').style.display = 'inline-block';
 }
 
-function restart() { createSession(); }
-createSession();
+loadSession();
 </script>
 </body>
 </html>`
@@ -195,7 +172,7 @@ function initWebLoginServer () {
 
   app.use('/hyrz/login', async (req, res) => {
     try {
-      // /hyrz/login/:token[/create|/qr|/status]
+      // /hyrz/login/:token[/qr|/status]
       const parts = req.path.split('/').filter(Boolean)
       const token = parts[0]
       const action = parts[1] || ''
@@ -203,32 +180,27 @@ function initWebLoginServer () {
       if (!token || !/^[0-9a-f]{24}$/.test(token)) {
         return res.status(400).send('无效的登录链接')
       }
-      const userId = WebLogin.checkToken(token)
-      if (!userId) {
+      const login = WebLogin.checkToken(token)
+      if (!login) {
         return res.status(410).type('html').send('<body style="text-align:center;padding-top:40vh;background:#14100a;color:#d9c896;font-family:sans-serif">登录链接已过期，请重新发送 #火影登录 获取新链接</body>')
       }
+      const { userId, sid } = login
 
       if (!action) {
         return res.type('html').send(PAGE_HTML)
       }
 
-      if (action === 'create') {
-        const { sid } = await WebLogin.createSession(userId)
-        return res.json({ code: 0, sid })
-      }
-
       if (action === 'qr') {
-        const sid = String(req.query.sid || '')
         const png = WebLogin.getQr(sid)
-        if (!png) return res.status(404).send('二维码已过期')
+        if (!png) return res.status(404).send('二维码已过期，请重新发送 #火影登录')
         res.type('image/png')
         return res.send(png)
       }
 
       if (action === 'status') {
-        const sid = String(req.query.sid || '')
         const r = await WebLogin.pollSession(sid)
-        return res.json(r)
+        const { access_token, ...safeResult } = r
+        return res.json(safeResult)
       }
 
       return res.status(404).send('not found')

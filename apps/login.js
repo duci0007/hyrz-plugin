@@ -30,25 +30,14 @@ export class HyrzLogin extends plugin {
       return false
     }
 
-    // 可选增强：配置了 webLoginBase 时附加网页登录链接（套腾讯文档中转防 QQ 风控屏蔽直链）
-    let linkTip = ''
-    const base = getBaseUrl()
-    if (base) {
-      const token = WebLogin.createToken(userId)
-      const link = `${base}/hyrz/login/${token}`
-      linkTip = '\n\n🌐 或打开链接登录（30 分钟内有效，勿外传）：\n' +
-        `https://docs.qq.com/scenario/link.html?url=${encodeURIComponent(link)}`
-    }
-
     await this.reply(
       '【火影扫码登录】\n' +
       '用手机 QQ 扫描下方二维码（长按图片 → 识别二维码），\n' +
-      '在弹出的授权页点击确认，机器人自动抓取 cookie 并绑定' +
-      linkTip,
+      '在弹出的授权页点击确认，机器人自动抓取 cookie 并绑定',
       true
     )
 
-    // 二维码直发聊天 + 后台轮询，无需域名/公网/端口
+    // 二维码直发聊天 + 后台轮询；同一次命令只创建一张二维码
     WebLogin.startQqLogin(userId, async (type, data) => {
       try {
         if (type === 'qr') {
@@ -56,6 +45,19 @@ export class HyrzLogin extends plugin {
           const file = path.join(QR_DIR, `${userId}.png`)
           fs.writeFileSync(file, data)
           await e.reply(segment.image(file))
+
+          // 网页入口只查看当前聊天端已创建的同一张二维码，不会另建会话
+          const base = getBaseUrl()
+          const sid = WebLogin.getQqLoginSession(userId)
+          if (base && sid) {
+            const token = WebLogin.createToken(userId, sid)
+            const link = `${base}/hyrz/login/${token}`
+            await e.reply(
+              '🌐 也可打开链接查看本次二维码（约 5 分钟有效，勿外传）：\n' +
+              `https://docs.qq.com/scenario/link.html?url=${encodeURIComponent(link)}`,
+              true
+            )
+          }
         } else if (type === 'ok') {
           await e.reply(
             '✅ 扫码登录成功，已自动绑定！\n' +
@@ -66,10 +68,8 @@ export class HyrzLogin extends plugin {
           )
         } else if (type === 'error') {
           await e.reply(`❌ 登录失败：${data}\n请重新发送 #火影登录 再试`, true)
-        } else if (type === 'refresh') {
-          await e.reply('⏰ 二维码已过期，正在刷新，请扫描新码...', true)
         } else if (type === 'timeout') {
-          await e.reply('⏰ 登录超时（约 30 分钟未完成），如需继续请重新发送 #火影登录', true)
+          await e.reply('⏰ 本次二维码已过期，登录未完成。请重新发送 #火影登录 获取新的二维码。', true)
         }
       } catch (err) {
         logger.error(`[火影网页登录] 消息发送失败: ${err.message}`)

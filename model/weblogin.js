@@ -1,6 +1,7 @@
 import https from 'node:https'
 import crypto from 'node:crypto'
 import Store from './store.js'
+import Api from './api.js'
 
 /**
  * 网页扫码登录（QQ 互联 → 火影活动 CK 自动抓取绑定）
@@ -87,12 +88,12 @@ function hash33 (s) {
 }
 
 /* ========== 登录令牌（命令 → 链接） ========== */
-const loginTokens = new Map() // token -> { userId, expire }
+const loginTokens = new Map() // token -> { userId, sid, expire }
 const TOKEN_TTL = 30 * 60 * 1000
 
-function createToken (userId) {
+function createToken (userId, sid) {
   const token = crypto.randomBytes(12).toString('hex')
-  loginTokens.set(token, { userId, expire: Date.now() + TOKEN_TTL })
+  loginTokens.set(token, { userId, sid, expire: Date.now() + TOKEN_TTL })
   return token
 }
 
@@ -103,7 +104,7 @@ function checkToken (token) {
     loginTokens.delete(token)
     return null
   }
-  return t.userId
+  return t
 }
 
 /* ========== 扫码会话 ========== */
@@ -146,8 +147,23 @@ function getQr (sid) {
   return s ? s.qrPng : null
 }
 
-/** 轮询一次扫码状态；扫码成功则走完整链路完成抓取绑定 */
+/** 轮询一次扫码状态；同一会话的并发轮询复用同一请求 */
 async function pollSession (sid) {
+  const s = sessions.get(sid)
+  if (!s) return { code: -1, state: 'gone', msg: '会话不存在或已过期，请刷新页面' }
+  if (s.polling) return s.polling
+
+  const polling = pollSessionOnce(sid)
+  s.polling = polling
+  try {
+    return await polling
+  } finally {
+    if (s.polling === polling) s.polling = null
+  }
+}
+
+/** 轮询一次扫码状态；扫码成功则走完整链路完成抓取绑定 */
+async function pollSessionOnce (sid) {
   const s = sessions.get(sid)
   if (!s) return { code: -1, state: 'gone', msg: '会话不存在或已过期，请刷新页面' }
   if (s.status === 'ok') return { code: 0, state: 'ok', ...s.result }
@@ -155,7 +171,7 @@ async function pollSession (sid) {
   if (s.status === 'busy') return { code: 3, state: 'scanned', msg: '正在获取登录态...' }
   if (Date.now() - s.createTime > SESSION_TTL) {
     sessions.delete(sid)
-    return { code: 2, state: 'expired', msg: '二维码已过期，正在刷新...' }
+    return { code: 2, state: 'expired', msg: '二维码已过期，请重新发送 #火影登录' }
   }
 
   // 完整参数复刻浏览器 getSubmitUrl('ptqrlogin')，缺 login_sig 等会返回 code 7 参数错误
@@ -196,7 +212,7 @@ async function pollSession (sid) {
   }
   if (m[1] === '65') {
     sessions.delete(sid)
-    return { code: 2, state: 'expired', msg: '二维码已过期，正在刷新...' }
+    return { code: 2, state: 'expired', msg: '二维码已过期，请重新发送 #火影登录' }
   }
   if (m[1] === '67') return { code: 3, state: 'scanned', msg: '已扫码，请在手机上确认登录' }
   return { code: 3, state: 'waiting', msg: '' }
@@ -369,19 +385,27 @@ async function finishLogin (s, sigUrl) {
 
   Store.set(s.userId, openid, access_token, QC_APPID, refresh_token)
 
+  // 同步角色列表到绑定文件（失败不阻塞绑定，查询时会自动重试）
+  let role = null
+  try {
+    role = await Api.syncUserRole(s.userId)
+  } catch (err) {
+    logger.warn(`[火影网页登录]角色同步失败（查询时会自动重试）: ${err.message}`)
+  }
+
   logger.mark(`[火影网页登录] 用户${s.userId}扫码绑定成功 openid=${openid}`)
   return {
     openid,
     access_token,
     nickname: verify.nickname,
     avatar: verify.avatar,
-    qqNick: s.qqNick || ''
+    qqNick: s.qqNick || '',
+    role: role ? `${role.roleName}（${role.partition}区 ${role.roleLevel}级）` : ''
   }
 }
 
 /* ========== QQ 直发二维码登录（零配置模式） ========== */
-const qqLogins = new Map() // userId -> { stop }
-const QQ_LOGIN_MAX_ROUNDS = 6 // 二维码最多刷新次数（约 30 分钟）
+const qqLogins = new Map() // userId -> { stop, sid }
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
@@ -390,46 +414,73 @@ const sleep = ms => new Promise(r => setTimeout(r, ms))
  * 用户长按识别 → 手机 QQ 授权确认 → 后台轮询拿到登录态 → 自动绑定
  * @param userId 用户 QQ
  * @param send 回调 (type, data) => Promise
- *   type: 'qr'(data=PNG Buffer) | 'ok'(data=结果) | 'error'(data=错误信息) | 'refresh'(刷新提示) | 'timeout'
+ *   type: 'qr'(data=PNG Buffer) | 'ok'(data=结果) | 'error'(data=错误信息) | 'timeout'
  */
+async function runSingleQqLogin ({
+  userId,
+  state,
+  send,
+  createSessionFn = createSession,
+  getQrFn = getQr,
+  pollSessionFn = pollSession,
+  sleepFn = sleep,
+  now = () => Date.now(),
+  deleteSessionFn = sid => sessions.delete(sid)
+}) {
+  const { sid } = await createSessionFn(userId)
+  state.sid = sid
+  if (state.stop) {
+    deleteSessionFn(sid)
+    return null
+  }
+  await send('qr', getQrFn(sid))
+  if (state.stop) return null
+
+  const t0 = now()
+  while (!state.stop && now() - t0 < SESSION_TTL) {
+    await sleepFn(2000)
+    if (state.stop) return null
+    let r
+    try {
+      r = await pollSessionFn(sid)
+    } catch {
+      continue // 网络波动，下轮重试
+    }
+    if (r.state === 'ok') {
+      await send('ok', r)
+      return { sid, ...r }
+    }
+    if (r.state === 'error') {
+      await send('error', r.msg)
+      return { sid, ...r }
+    }
+    if (r.state === 'expired' || r.state === 'gone') break
+    // waiting / scanned → 继续轮询
+  }
+
+  if (!state.stop) {
+    deleteSessionFn(sid)
+    await send('timeout', null)
+  }
+  return { sid, state: 'expired' }
+}
+
 async function startQqLogin (userId, send) {
-  // 同一用户重复发命令 → 停止旧轮询，保证唯一会话
+  // 同一用户再次发命令 → 停止旧轮询，旧二维码同时失效
   stopQqLogin(userId)
-  const state = { stop: false }
+  const state = { stop: false, sid: '' }
   qqLogins.set(userId, state)
 
   try {
-    for (let round = 1; round <= QQ_LOGIN_MAX_ROUNDS && !state.stop; round++) {
-      const { sid } = await createSession(userId)
-      if (state.stop) return
-      await send('qr', getQr(sid))
-      if (state.stop) return
-
-      const t0 = Date.now()
-      while (!state.stop && Date.now() - t0 < SESSION_TTL) {
-        await sleep(2000)
-        if (state.stop) return
-        let r
-        try {
-          r = await pollSession(sid)
-        } catch {
-          continue // 网络波动，下轮重试
-        }
-        if (r.state === 'ok') return await send('ok', r)
-        if (r.state === 'error') return await send('error', r.msg)
-        if (r.state === 'expired' || r.state === 'gone') break // 过期 → 刷新二维码
-        // waiting / scanned → 继续轮询
-      }
-      if (state.stop) return
-      // 二维码过期且还有刷新次数 → 提示并发新码
-      if (round < QQ_LOGIN_MAX_ROUNDS) {
-        await send('refresh', null)
-      }
-    }
-    if (!state.stop) await send('timeout', null)
+    return await runSingleQqLogin({ userId, state, send })
   } finally {
     if (qqLogins.get(userId) === state) qqLogins.delete(userId)
   }
+}
+
+/** 获取当前用户登录尝试的会话 ID */
+function getQqLoginSession (userId) {
+  return qqLogins.get(userId)?.sid || ''
 }
 
 /** 停止某用户进行中的 QQ 扫码登录轮询 */
@@ -437,6 +488,7 @@ function stopQqLogin (userId) {
   const s = qqLogins.get(userId)
   if (s) {
     s.stop = true
+    if (s.sid) sessions.delete(s.sid)
     qqLogins.delete(userId)
   }
 }
@@ -448,6 +500,6 @@ setInterval(() => {
   for (const [k, s] of sessions) if (now - s.createTime > SESSION_TTL) sessions.delete(k)
 }, 10 * 60 * 1000).unref()
 
-const WebLogin = { createToken, checkToken, createSession, pollSession, getQr, startQqLogin, stopQqLogin, finishLogin }
+const WebLogin = { createToken, checkToken, createSession, pollSession, getQr, startQqLogin, getQqLoginSession, stopQqLogin, finishLogin }
 export default WebLogin
-export { CookieJar, request, finishLogin, hash33, UA, PT_APPID, DAID, QC_APPID, JS_VER, REDIRECT_URI }
+export { CookieJar, request, finishLogin, hash33, runSingleQqLogin, UA, PT_APPID, DAID, QC_APPID, JS_VER, REDIRECT_URI }

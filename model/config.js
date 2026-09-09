@@ -7,7 +7,9 @@ const CONFIG_FILE = path.join(CONFIG_DIR, 'config.yaml')
 
 const DEFAULT_CONFIG = {
   // 网页登录链接前缀（#火影登录 生成链接用），如 http://263522.xyz:2536
-  webLoginBase: ''
+  webLoginBase: '',
+  // 每日福利定时任务执行时间（cron 表达式，默认每天 08:30）
+  welfareTime: '0 30 8 * * ?'
 }
 
 function load () {

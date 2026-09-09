@@ -44,8 +44,10 @@ git clone https://github.com/duci0007/hyrz-plugin.git ./plugins/hyrz-plugin
 
 游戏账号（QQ 区 / 微信区）通过以下任一方式绑定：
 
-1. **扫码登录（推荐）**：私聊发送 `#火影登录`，机器人回传二维码，手机 QQ 扫码确认后自动抓取 cookie 完成绑定
+1. **扫码登录（推荐）**：私聊发送 `#火影登录`，机器人回传一张约 5 分钟有效的二维码；手机 QQ 扫码确认后自动抓取 cookie 完成绑定。二维码过期后不会自动刷新，请重新发送命令获取新码。
 2. **手动绑定**：手机抓包小程序请求，复制 cookie（含 `openid` / `access_token`）后私聊发送 `#火影绑定 <cookie>`
+
+登录态可能会失效；目前支持的恢复方式是重新发送 `#火影登录` 绑定，不会猜测或自动调用未经验证的令牌刷新接口。
 
 绑定数据按 QQ 号独立存储于 `data/bindings/{QQ号}.json`，删除即解绑。
 
@@ -54,9 +56,10 @@ git clone https://github.com/duci0007/hyrz-plugin.git ./plugins/hyrz-plugin
 `config/config.yaml`（首次运行自动生成）：
 
 ```yaml
-# 网页登录链接前缀（#火影登录 生成网页链接用）
+# 网页登录链接前缀（#火影登录 可查看同一次二维码）
 # 需公网可访问，如 http://your.domain.com:2536
 # 留空则自动读取 Yunzai config/server.yaml 的 url
+# 网页不能刷新或新建二维码；二维码过期后请重新发送 #火影登录
 webLoginBase: ""
 ```
 
