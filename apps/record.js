@@ -1,4 +1,5 @@
 import Api from '../model/api.js'
+import Store from '../model/store.js'
 
 export class HyrzRecord extends plugin {
   constructor () {
@@ -16,7 +17,7 @@ export class HyrzRecord extends plugin {
     })
   }
 
-  /** 个人面板：角色信息/六维/赛季/常用忍者/组织/资产 */
+  /** 个人面板：角色信息/六维/赛季/常用忍者/组织/资产；支持 @某人 查其面板 */
   async panel () {
     const e = this.e
     if (!e.runtime) {
@@ -24,7 +25,13 @@ export class HyrzRecord extends plugin {
       return false
     }
 
-    const data = await Api.getCharacterInfo(e.user_id)
+    const t = Store.resolveTarget(e)
+    if (t.notBound) {
+      await this.reply('❌ @ 的目标还没有绑定，请让 TA 发送 #火影登录', true)
+      return false
+    }
+
+    const data = await Api.getCharacterInfo(t.userId)
     if (data.error) {
       await this.reply(`❌ ${data.error}`, true)
       return false
@@ -32,6 +39,7 @@ export class HyrzRecord extends plugin {
 
     const tplData = {
       ...data,
+      queryName: t.isAt ? Store.get(t.userId)?.roleName : '',
       updateTime: new Date().toLocaleString('zh-CN'),
       quality: 90,
       saveId: e.user_id
@@ -47,7 +55,7 @@ export class HyrzRecord extends plugin {
     return false
   }
 
-  /** 最近战绩：模式分组概览（排位赛 / 忍术对决）+ 最近比赛列表；#火影战绩 <赛季> 查历史赛季排位 */
+  /** 最近战绩：模式分组概览（排位赛 / 忍术对决）+ 最近比赛列表；支持 @某人；#火影战绩 <赛季> 查历史赛季排位 */
   async record () {
     const e = this.e
     if (!e.runtime) {
@@ -55,7 +63,13 @@ export class HyrzRecord extends plugin {
       return false
     }
 
-    const data = await Api.getCharacterInfo(e.user_id)
+    const t = Store.resolveTarget(e)
+    if (t.notBound) {
+      await this.reply('❌ @ 的目标还没有绑定，请让 TA 发送 #火影登录', true)
+      return false
+    }
+
+    const data = await Api.getCharacterInfo(t.userId)
     if (data.error) {
       await this.reply(`❌ ${data.error}`, true)
       return false
@@ -72,7 +86,7 @@ export class HyrzRecord extends plugin {
         await this.reply(`❌ 未找到赛季「${arg}」\n可选：${names}`, true)
         return false
       }
-      const r = await Api.getSeasonRecord(e.user_id, s.matchId)
+      const r = await Api.getSeasonRecord(t.userId, s.matchId)
       if (r.error) {
         await this.reply(`❌ ${r.error}`, true)
         return false
@@ -83,6 +97,7 @@ export class HyrzRecord extends plugin {
     const tplData = {
       ...data,
       seasonRecord,
+      queryName: t.isAt ? Store.get(t.userId)?.roleName : '',
       recentLose: data.recentTotal - data.recentWins,
       updateTime: new Date().toLocaleString('zh-CN'),
       quality: 90,

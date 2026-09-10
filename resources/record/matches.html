@@ -17,7 +17,7 @@
       <div class="seal">战</div>
       <div class="head-text">
         <h1>最近战绩</h1>
-        <p>{{info.vip}} · 战力 {{info.fight}}</p>
+        <p>{{info.vip}} · 战力 {{info.fight}}{{if queryName}} · {{queryName}}{{/if}}</p>
       </div>
       <div class="head-side">
         <div class="online {{info.isOnline == 1 ? 'on' : 'off'}}">{{info.isOnline == 1 ? '在线' : '离线'}}</div>

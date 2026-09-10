@@ -1,4 +1,5 @@
 import Api from '../model/api.js'
+import Store from '../model/store.js'
 
 export class HyrzJbzs extends plugin {
   constructor () {
@@ -21,7 +22,13 @@ export class HyrzJbzs extends plugin {
       return false
     }
 
-    const data = await Api.getJbzsData(e.user_id)
+    const t = Store.resolveTarget(e)
+    if (t.notBound) {
+      await this.reply('❌ @ 的目标还没有绑定，请让 TA 发送 #火影登录', true)
+      return false
+    }
+
+    const data = await Api.getJbzsData(t.userId)
     if (data.error) {
       await this.reply(`❌ ${data.error}`, true)
       return false
@@ -29,6 +36,7 @@ export class HyrzJbzs extends plugin {
 
     const tplData = {
       ...data,
+      queryName: t.isAt ? Store.get(t.userId)?.roleName : '',
       updateTime: new Date().toLocaleString('zh-CN'),
       quality: 90,
       saveId: e.user_id

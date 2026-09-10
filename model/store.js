@@ -118,6 +118,21 @@ const Store = {
     } catch { }
   },
 
+  /**
+   * 解析查询目标（只读查询命令用）
+   * 消息里 @ 了已绑定的人 → 查其数据；@ 了未绑定的人 → notBound 提示；否则查自己
+   */
+  resolveTarget (e) {
+    const sender = String(e?.user_id || '')
+    const at = e?.at || (Array.isArray(e?.message) ? e.message.find(m => m.type === 'at')?.qq : null)
+    const atId = String(at || '')
+    if (atId && atId !== sender) {
+      if (this.get(atId)) return { userId: atId, isAt: true }
+      return { userId: sender, isAt: true, notBound: atId }
+    }
+    return { userId: sender, isAt: false }
+  },
+
   parseCookie,
 
   /** 生成完整 Cookie 字符串 */

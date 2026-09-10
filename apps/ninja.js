@@ -1,5 +1,6 @@
 import Api from '../model/api.js'
 import Ninja from '../model/ninja.js'
+import Store from '../model/store.js'
 
 /** 多候选待选择状态（user_id → {list, time}），10分钟过期 */
 const pendingSelect = new Map()
@@ -98,7 +99,10 @@ export class HyrzNinja extends plugin {
       return false
     }
 
-    const data = await Api.getNinjaDetail(e.user_id, id)
+    // @某人 时展示其个人使用数据
+    const t = Store.resolveTarget(e)
+
+    const data = await Api.getNinjaDetail(t.userId, id)
     if (data.error) {
       await this.reply(`❌ ${data.error}`, true)
       return false
