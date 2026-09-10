@@ -25,20 +25,63 @@
     </header>
 
     <div class="section">
-      <div class="section-title">📊 近期概览 {{if rankMatches && rankMatches.season}}<span class="section-sub">{{rankMatches.season}}</span>{{/if}}</div>
+      <div class="section-title">📊 近期概览 <span class="section-sub">最近{{recentTotal}}场 · 胜率{{recentWinRate}}%</span></div>
       <div class="season-stats">
         <div class="s-stat"><span class="s-val">{{recentTotal}}</span><span class="s-label">总场次</span></div>
         <div class="s-stat"><span class="s-val green">{{recentWins}}</span><span class="s-label">胜场</span></div>
         <div class="s-stat"><span class="s-val red">{{recentLose}}</span><span class="s-label">败场</span></div>
         <div class="s-stat"><span class="s-val gold">{{recentWinRate}}%</span><span class="s-label">胜率</span></div>
       </div>
-      {{if rankMatches && rankMatches.highest}}
+      {{if modes && modes.length}}
+      <div class="section-title" style="margin-top:14px;">🎯 模式统计</div>
+      {{each modes md idx}}
       <div class="season-stats">
-        <div class="s-stat"><span class="s-val gold">{{rankMatches.highest}}</span><span class="s-label">本赛季最高分</span></div>
+        <div class="s-stat"><span class="s-val">{{md.name}}</span><span class="s-label">模式</span></div>
+        <div class="s-stat"><span class="s-val">{{md.total}}</span><span class="s-label">场次</span></div>
+        <div class="s-stat"><span class="s-val green">{{md.wins}}</span><span class="s-label">胜场</span></div>
+        <div class="s-stat"><span class="s-val gold">{{md.winRate}}%</span><span class="s-label">胜率</span></div>
+      </div>
+      {{/each}}
+      {{/if}}
+      {{if rankMatches && rankMatches.highest}}
+      <div class="section-title" style="margin-top:14px;">🏆 排位赛·{{rankMatches.season || '本赛季'}}</div>
+      <div class="season-stats">
+        <div class="s-stat"><span class="s-val gold">{{rankMatches.highest}}</span><span class="s-label">赛季最高分</span></div>
         <div class="s-stat"><span class="s-val">{{rankMatches.total}}</span><span class="s-label">赛季场次</span></div>
         <div class="s-stat"><span class="s-val green">{{rankMatches.win}}</span><span class="s-label">赛季胜场</span></div>
         <div class="s-stat"><span class="s-val gold">{{rankMatches.winRate}}%</span><span class="s-label">赛季胜率</span></div>
       </div>
+      {{/if}}
+      {{if seasonRecord}}
+      <div class="section-title" style="margin-top:14px;">📜 历史赛季·{{seasonRecord.name || seasonRecord.season}}</div>
+      <div class="season-stats">
+        <div class="s-stat"><span class="s-val gold">{{seasonRecord.highest}}</span><span class="s-label">最高分</span></div>
+        <div class="s-stat"><span class="s-val">{{seasonRecord.total}}</span><span class="s-label">场次</span></div>
+        <div class="s-stat"><span class="s-val green">{{seasonRecord.win}}</span><span class="s-label">胜场</span></div>
+        <div class="s-stat"><span class="s-val gold">{{seasonRecord.winRate}}%</span><span class="s-label">胜率</span></div>
+      </div>
+      {{if seasonRecord.title}}
+      <div class="section-title" style="margin-top:10px;">🏷️ {{seasonRecord.title}}</div>
+      {{/if}}
+      {{if seasonRecord.beforeNinja && seasonRecord.beforeNinja.length}}
+      <div class="section-title" style="margin-top:10px;">常用的忍者</div>
+      <div class="match-list">
+        {{each seasonRecord.beforeNinja n i2}}
+        <div class="match-item">
+          <div class="match-result" style="background:#3a2c10;color:#ffcf70;">{{n.winRate}}%</div>
+          <div class="match-ninjas">
+            <div class="match-ninja">
+              <img class="match-avatar" src="{{n.avatar}}">
+              <div class="match-ninja-name">{{n.name}}</div>
+            </div>
+          </div>
+          <div class="match-meta">
+            <div class="match-type">{{n.win}}胜 / {{n.total}}场</div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      {{/if}}
       {{/if}}
     </div>
 

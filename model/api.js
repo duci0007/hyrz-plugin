@@ -146,12 +146,65 @@ function parseResult (r) {
   return String(r) === '0' ? '败' : '胜'
 }
 
-/** fightType: 1=排位 0=匹配 41=其他模式 */
+/** fightType: 1=排位赛 0=忍术对决(休闲对战) 其他=未分类模式 */
 function parseFightType (t) {
   const s = String(t)
-  if (s === '1') return '排位'
-  if (s === '0') return '匹配'
+  if (s === '1') return '排位赛'
+  if (s === '0') return '忍术对决'
   return '其他'
+}
+
+/** 按模式统计近期对局: [{key,name,total,wins,winRate}]（仅保留有场次的模式，按场次降序） */
+function buildModeStats (matches) {
+  const order = [
+    { key: 'rank', name: '排位赛', type: '1' },
+    { key: 'duel', name: '忍术对决', type: '0' }
+  ]
+  const stats = order.map(o => {
+    const list = matches.filter(m => m.fightType === o.type)
+    const wins = list.filter(m => m.win).length
+    return {
+      key: o.key,
+      name: o.name,
+      total: list.length,
+      wins,
+      winRate: list.length ? Math.round(wins / list.length * 100) : 0
+    }
+  })
+  const other = matches.filter(m => m.fightType !== '0' && m.fightType !== '1')
+  if (other.length) {
+    const wins = other.filter(m => m.win).length
+    stats.push({ key: 'other', name: '其他', total: other.length, wins, winRate: Math.round(wins / other.length * 100) })
+  }
+  return stats.filter(s => s.total > 0).sort((a, b) => b.total - a.total)
+}
+
+/** 解析段位赛（排位赛）赛季记录（cmd=matchRecord 返回的 sourceInfo） */
+function parseRankRecord (mr, seasons) {
+  if (!mr || !Object.keys(mr).length) return null
+  const mrTotal = Number(mr.totalMatch) || 0
+  const mrWin = Number(mr.totalWinMatch) || 0
+  const curSeason = (seasons || []).find(s => String(s.matchId) === String(mr.matchId))
+  return {
+    matchId: mr.matchId,
+    season: curSeason?.adName || '',
+    total: mrTotal,
+    win: mrWin,
+    fail: Number(mr.failMatch) || 0,
+    tie: Number(mr.tieMatch) || 0,
+    winRate: mrTotal ? Math.round(mrWin / mrTotal * 100) : 0,
+    highest: mr.highestMatch,
+    title: mr.matchTitle?.[0] || '',
+    titleDesc: mr.matchTitle?.[1] || '',
+    beforeNinja: (mr.beforeNinja || []).map(n => ({
+      name: Ninja.getLineName(n.ninja),
+      avatar: Ninja.getAvatar(n.ninja),
+      total: n.total,
+      win: n.win,
+      winRate: n.total ? Math.round(n.win / n.total * 100) : 0,
+      proficientPct: Math.min(100, Math.round((n.proficientCnt || 0) / 280))
+    }))
+  }
 }
 
 /** 大数字格式化: 9380524 → 938.1万 */
@@ -220,7 +273,7 @@ const Api = {
   /** 查询角色战绩信息（角色由绑定文件里的 partition 决定，缺失时自动同步角色列表） */
   async getCharacterInfo (userId) {
     let bind = Store.get(userId)
-    if (!bind) return { error: '未绑定，请先发送 #火影绑定 + cookie' }
+    if (!bind) return { error: '未绑定，请先发送 #火影登录 扫码绑定' }
 
     // 绑定后从未同步过角色 → 先拉角色列表写入 partition
     if (!bind.partition) {
@@ -266,12 +319,17 @@ const Api = {
       })),
       result: parseResult(m.result),
       win: String(m.result) !== '0',
-      type: parseFightType(m.fightType)
+      type: parseFightType(m.fightType),
+      fightType: String(m.fightType)
     }))
-    // 胜率统计（基于全部近期比赛）
+    // 胜率统计（基于全部近期比赛）+ 按模式分组（排位赛 / 忍术对决）
     const allMatches = d.recentMatch?.sourceInfo || []
     const total = allMatches.length
     const wins = allMatches.filter(m => String(m.result) !== '0').length
+    const modes = buildModeStats(allMatches.map(m => ({
+      fightType: String(m.fightType),
+      win: String(m.result) !== '0'
+    })))
 
     // 六维属性 + 战力排名
     const pw = d.myPower?.sourceInfo || {}
@@ -308,31 +366,11 @@ const Api = {
       avatar: as.avatarNum
     } : null
 
-    // 赛季段位赛记录
+    // 赛季段位赛记录（当前赛季）+ 历史赛季列表
     const mr = d.matchRecord?.sourceInfo || {}
     const seasons = d.matchRecord?.dependSource?.data || []
-    const curSeason = seasons.find(s => String(s.matchId) === String(mr.matchId))
-    const mrTotal = Number(mr.totalMatch) || 0
-    const mrWin = Number(mr.totalWinMatch) || 0
-    const rankMatches = Object.keys(mr).length ? {
-      season: curSeason?.adName || '',
-      total: mrTotal,
-      win: mrWin,
-      fail: Number(mr.failMatch) || 0,
-      tie: Number(mr.tieMatch) || 0,
-      winRate: mrTotal ? Math.round(mrWin / mrTotal * 100) : 0,
-      highest: mr.highestMatch,
-      title: mr.matchTitle?.[0] || '',
-      titleDesc: mr.matchTitle?.[1] || '',
-      beforeNinja: (mr.beforeNinja || []).map(n => ({
-        name: Ninja.getLineName(n.ninja),
-        avatar: Ninja.getAvatar(n.ninja),
-        total: n.total,
-        win: n.win,
-        winRate: n.total ? Math.round(n.win / n.total * 100) : 0,
-        proficientPct: Math.min(100, Math.round((n.proficientCnt || 0) / 280))
-      }))
-    } : null
+    const rankMatches = parseRankRecord(mr, seasons)
+    const seasonList = seasons.map(s => ({ matchId: s.matchId, name: s.adName }))
 
     return {
       info: {
@@ -359,14 +397,38 @@ const Api = {
       ninjaNumber: d.myNinja?.sourceInfo?.ninjaNumber,
       myNinja,
       matches,
+      modes,
       recentWinRate: total ? Math.round(wins / total * 100) : 0,
       recentWins: wins,
       recentTotal: total,
       power,
       group,
       assets,
-      rankMatches
+      rankMatches,
+      seasonList
     }
+  },
+
+  /**
+   * 查询指定历史赛季的排位赛（段位赛）记录
+   * @param {string} userId
+   * @param {string} matchId 赛季 ID（来自 getCharacterInfo 返回的 seasonList）
+   */
+  async getSeasonRecord (userId, matchId) {
+    let bind = Store.get(userId)
+    if (!bind) return { error: '未绑定，请先发送 #火影登录 扫码绑定' }
+    if (!bind.partition) {
+      await Api.syncUserRole(userId)
+      bind = Store.get(userId) || bind
+    }
+    const r = await post('CharacterInfo/getCharacterInfo',
+      `area=2&platId=1&partition=${bind.partition || 2175}&roleId=${bind.roleId || 1}&cmd=matchRecord&matchId=${matchId}&iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0`,
+      Store.buildCookie(bind))
+    if (r.iRet !== 0) return { error: loginStateHint(`赛季查询失败: ${r.sMsg || r.iRet}`) }
+    const mr = r.jData?.matchRecord?.sourceInfo
+    if (!mr || !Object.keys(mr).length) return { error: '未找到该赛季的记录' }
+    const record = parseRankRecord(mr, [])
+    return { record }
   },
 
   /**
@@ -465,7 +527,7 @@ const Api = {
    */
   async getJbzsData (userId) {
     const bind = Store.get(userId)
-    if (!bind) return { error: '未绑定，请先发送 #火影绑定 + cookie' }
+    if (!bind) return { error: '未绑定，请先发送 #火影登录 扫码绑定' }
     const cookie = Store.buildCookie(bind)
 
     // 1. 主态初始化（chart 252291）
@@ -577,7 +639,7 @@ const Api = {
    */
   async getActList (userId) {
     const bind = Store.get(userId)
-    if (!bind) return { error: '未绑定，请先发送 #火影绑定 + cookie' }
+    if (!bind) return { error: '未绑定，请先发送 #火影登录 扫码绑定' }
     const cookie = Store.buildCookie(bind)
 
     const r = await post('ActCalendar/getActListInfo', 'iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0', cookie)
@@ -668,7 +730,7 @@ const Api = {
    */
   async getWallpaperList (userId, page = 1) {
     const bind = Store.get(userId)
-    if (!bind) return { error: '未绑定，请先发送 #火影绑定 + cookie' }
+    if (!bind) return { error: '未绑定，请先发送 #火影登录 扫码绑定' }
     const cookie = Store.buildCookie(bind)
 
     const r = await post('wallpaper/getWallPaperList',
@@ -697,7 +759,7 @@ const Api = {
    */
   async getArticleList (userId, page = 1) {
     const bind = Store.get(userId)
-    if (!bind) return { error: '未绑定，请先发送 #火影绑定 + cookie' }
+    if (!bind) return { error: '未绑定，请先发送 #火影登录 扫码绑定' }
     const cookie = Store.buildCookie(bind)
 
     const r = await post('Ugc/articleList',
@@ -764,7 +826,7 @@ const Api = {
   /** 查询今日任务状态（getTodayActInfo 仅查询，不触发签到；签到需走 amsSign） */
   async getTodayActInfo (userId) {
     const bind = Store.get(userId)
-    if (!bind) return { error: '未绑定，请先发送 #火影绑定 + cookie' }
+    if (!bind) return { error: '未绑定，请先发送 #火影登录 扫码绑定' }
     const body = `area=2&platId=1&partition=${bind.partition || 2175}&roleId=${bind.roleId || 1}&iActId=8265&sAppId=ULINK-AKKJ-784060&g_tk=0`
     const res = await post('Welfare/getTodayActInfo', body, Store.buildCookie(bind))
     if (res.iRet !== 0) return { error: loginStateHint(`任务查询失败: ${res.sMsg || res.iRet}`) }

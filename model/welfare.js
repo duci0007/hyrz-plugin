@@ -25,6 +25,22 @@ import Api from './api.js'
 
 const sleep = ms => new Promise(r => setTimeout(r, ms))
 
+/**
+ * 领取任务奖励（带重试）
+ * AMS 签到/任务完成后，ULINK 侧 curDone 状态同步有秒级延迟，
+ * 立即领奖会报"请先完成任务后领取"，等待后重试即可
+ */
+async function claimReward (userId, idx) {
+  let r
+  for (let i = 0; i < 4; i++) {
+    r = await Api.taskLotteryNow(userId, idx)
+    if (r.iRet === 0) return r
+    if (!/请先完成/.test(r.sMsg || '')) return r
+    await sleep(2000)
+  }
+  return r
+}
+
 /** 可自动完成的任务定义（index → 执行函数） */
 const AUTO_TASKS = {
   sign: async userId => {
@@ -103,7 +119,7 @@ const Welfare = {
       if (!auto) {
         if (Number(t.curDone) >= Number(t.target)) {
           // 完成但未领奖（游戏内任务做完的情况）→ 直接领
-          const r = await Api.taskLotteryNow(userId, idx)
+          const r = await claimReward(userId, idx)
           if (r.iRet === 0) {
             got += t.pointNum
             results.push({ name: t.name, point: t.pointNum, status: 'done', msg: '已领奖' })
@@ -131,8 +147,8 @@ const Welfare = {
         continue
       }
 
-      // 3. 领奖
-      const r = await Api.taskLotteryNow(userId, idx)
+      // 3. 领奖（状态同步有延迟，自动重试）
+      const r = await claimReward(userId, idx)
       if (r.iRet === 0) {
         got += t.pointNum
         results.push({ name: t.name, point: t.pointNum, status: 'done', msg: `+${t.pointNum}分` })

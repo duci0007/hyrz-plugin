@@ -32,8 +32,7 @@ export class HyrzLogin extends plugin {
 
     await this.reply(
       '【火影扫码登录】\n' +
-      '用手机 QQ 扫描下方二维码（长按图片 → 识别二维码），\n' +
-      '在弹出的授权页点击确认，机器人自动抓取 cookie 并绑定',
+      '请用手机 QQ 扫描下方二维码，确认授权后自动完成绑定 ✨',
       true
     )
 
@@ -62,7 +61,7 @@ export class HyrzLogin extends plugin {
           await e.reply(
             '✅ 扫码登录成功，已自动绑定！\n' +
             `游戏昵称：${data.nickname || data.qqNick || '-'}\n` +
-            `openid：${data.openid}\n` +
+            (data.role ? `默认角色：${data.role}\n` : '') +
             '现在可以使用 #火影面板 #火影战绩 等命令了',
             true
           )

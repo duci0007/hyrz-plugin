@@ -47,7 +47,7 @@ export class HyrzRecord extends plugin {
     return false
   }
 
-  /** 最近战绩：近期概览 + 最近比赛列表 */
+  /** 最近战绩：模式分组概览（排位赛 / 忍术对决）+ 最近比赛列表；#火影战绩 <赛季> 查历史赛季排位 */
   async record () {
     const e = this.e
     if (!e.runtime) {
@@ -61,8 +61,28 @@ export class HyrzRecord extends plugin {
       return false
     }
 
+    // #火影战绩 <赛季名/序号> → 查询历史赛季排位赛记录
+    const arg = (e.msg || '').replace(/^#?火影(战绩|对局|比赛)/, '').trim()
+    let seasonRecord = null
+    if (arg && data.seasonList?.length) {
+      const s = data.seasonList.find(x => x.name.includes(arg)) ||
+        data.seasonList[Number(arg) - 1]
+      if (!s) {
+        const names = data.seasonList.map((x, i) => `${i + 1}.${x.name}`).join(' ')
+        await this.reply(`❌ 未找到赛季「${arg}」\n可选：${names}`, true)
+        return false
+      }
+      const r = await Api.getSeasonRecord(e.user_id, s.matchId)
+      if (r.error) {
+        await this.reply(`❌ ${r.error}`, true)
+        return false
+      }
+      seasonRecord = { ...r.record, name: s.name }
+    }
+
     const tplData = {
       ...data,
+      seasonRecord,
       recentLose: data.recentTotal - data.recentWins,
       updateTime: new Date().toLocaleString('zh-CN'),
       quality: 90,
@@ -98,6 +118,14 @@ export class HyrzRecord extends plugin {
       `【火影忍者·最近战绩】`,
       `最近${d.recentTotal}场: 胜${d.recentWins} (胜率${d.recentWinRate}%)`
     ]
+    if (d.modes?.length) {
+      lines.push('─ 模式统计 ─')
+      d.modes.forEach(m => lines.push(` ${m.name}: ${m.total}场 胜${m.wins} (胜率${m.winRate}%)`))
+    }
+    if (d.rankMatches) {
+      lines.push(`─ ${d.rankMatches.season || '本赛季'}排位 ─`)
+      lines.push(` ${d.rankMatches.total}场 胜${d.rankMatches.win} 负${d.rankMatches.fail} 平${d.rankMatches.tie} (胜率${d.rankMatches.winRate}%) 最高分${d.rankMatches.highest}`)
+    }
     d.matches.forEach(m => {
       const names = m.ninjas.map(n => n.name.replace(/\n/g, '')).filter(Boolean).join('/')
       lines.push(` ${m.result} ${m.type} ${names} ${m.time}`)

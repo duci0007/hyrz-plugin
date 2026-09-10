@@ -17,8 +17,8 @@ export class HyrzHelp extends plugin {
       num: '壹',
       name: '登录绑定',
       items: [
-        { icon: '📱', cmd: '#火影登录', desc: 'QQ 扫码登录，自动抓取 cookie 绑定', tag: '推荐', tagClass: 'rec' },
-        { icon: '📋', cmd: '#火影绑定 + cookie', desc: '手动绑定小程序 cookie', tag: '私聊', tagClass: 'pvt' }
+        { icon: '📱', cmd: '#火影登录', desc: 'QQ 扫码登录，自动绑定并同步角色', tag: '推荐', tagClass: 'rec' },
+        { icon: '🔄', cmd: '#火影区服 [序号]', desc: '查看/切换查询角色（多角色用户）' }
       ]
     },
     {
@@ -26,7 +26,8 @@ export class HyrzHelp extends plugin {
       name: '个人数据',
       items: [
         { icon: '👤', cmd: '#火影面板', desc: '个人面板：战力 / 六维 / 赛季 / 常用忍者 / 组织 / 资产' },
-        { icon: '⚔️', cmd: '#火影战绩', desc: '最近战绩：近期概览 / 最近比赛列表' },
+        { icon: '⚔️', cmd: '#火影战绩', desc: '最近战绩：排位赛 / 忍术对决 分模式统计' },
+        { icon: '📜', cmd: '#火影战绩 赛季', desc: '历史赛季排位记录，如 #火影战绩 星界2 / #火影战绩 3' },
         { icon: '💰', cmd: '#火影金币', desc: '金币助手：钱包余额 / 本周产出 / 月度统计 / 流水明细' }
       ]
     },
@@ -53,7 +54,7 @@ export class HyrzHelp extends plugin {
       num: '伍',
       name: '账号管理',
       items: [
-        { icon: '✂️', cmd: '#火影解绑', desc: '解绑当前 cookie' },
+        { icon: '✂️', cmd: '#火影解绑', desc: '解绑当前账号' },
         { icon: '📖', cmd: '#火影帮助', desc: '显示本帮助' }
       ]
     }
