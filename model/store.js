@@ -111,6 +111,17 @@ const Store = {
     }
   },
 
+  /** 列出所有已绑定用户 QQ */
+  listAll () {
+    try {
+      return fs.readdirSync(BIND_DIR)
+        .filter(f => f.endsWith('.json'))
+        .map(f => f.replace(/.json$/, ''))
+    } catch {
+      return []
+    }
+  },
+
   /** 解绑（删除 bindings/{qq}.json） */
   del (userId) {
     try {

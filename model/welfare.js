@@ -44,10 +44,14 @@ async function claimReward (userId, idx) {
 /** 可自动完成的任务定义（index → 执行函数） */
 const AUTO_TASKS = {
   sign: async userId => {
-    // 签到走 AMS 活动576370，iFlowId=1083547
+    // 复刻小程序流程（抓包证实）：
+    // 1083576 查询签到奖励（同时把 ULINK sign 任务标记 curDone=1）
+    // → todaySceneReported → 1083547 正式签到 → todaySceneReported
+    await Api.amsQuerySign(userId)
+    await Api.todaySceneReported(userId)
     const r = await Api.amsSign(userId)
-    if (r.iRet !== 0) throw new Error(r.sMsg || '签到失败')
-    // 签到后场景上报
+    // 已签过到（如当天重复执行）不视为失败，仍走领奖
+    if (r.iRet !== 0 && !/已签|重复/.test(r.sMsg || '')) throw new Error(r.sMsg || '签到失败')
     await Api.todaySceneReported(userId)
   },
   readArticle: async userId => {

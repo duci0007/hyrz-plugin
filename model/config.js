@@ -9,7 +9,11 @@ const DEFAULT_CONFIG = {
   // 网页登录链接前缀（#火影登录 生成链接用），如 http://263522.xyz:2536
   webLoginBase: '',
   // 每日福利定时任务执行时间（cron 表达式，默认每天 08:30）
-  welfareTime: '0 30 8 * * ?'
+  welfareTime: '0 30 8 * * ?',
+  // 每日自动签到时间（cron 表达式，默认每天 05:00）
+  autoSignTime: '0 0 5 * * ?',
+  // 每日自动签到范围: off=关闭 self=仅机器人主人 all=所有已绑定用户
+  autoSign: 'self'
 }
 
 function load () {
@@ -34,12 +38,19 @@ function getBaseUrl () {
   return ''
 }
 
-/** 首次运行生成默认配置 */
+/** 首次运行生成默认配置；已有配置缺新字段时自动补全 */
 function ensureConfig () {
-  if (!fs.existsSync(CONFIG_FILE)) {
-    fs.mkdirSync(CONFIG_DIR, { recursive: true })
-    fs.writeFileSync(CONFIG_FILE, YAML.stringify(DEFAULT_CONFIG))
-  }
+  try {
+    if (!fs.existsSync(CONFIG_FILE)) {
+      fs.mkdirSync(CONFIG_DIR, { recursive: true })
+      fs.writeFileSync(CONFIG_FILE, YAML.stringify(DEFAULT_CONFIG))
+      return
+    }
+    const cur = YAML.parse(fs.readFileSync(CONFIG_FILE, 'utf8')) || {}
+    if (Object.keys(DEFAULT_CONFIG).some(k => cur[k] === undefined)) {
+      fs.writeFileSync(CONFIG_FILE, YAML.stringify({ ...DEFAULT_CONFIG, ...cur }))
+    }
+  } catch { /* ignore */ }
 }
 
 ensureConfig()

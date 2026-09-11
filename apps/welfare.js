@@ -1,6 +1,7 @@
 import Welfare from '../model/welfare.js'
 import Store from '../model/store.js'
 import Config from '../model/config.js'
+import cfg from '../../../lib/config/config.js'
 
 /**
  * 每日福利：签到 + 积分任务自动完成
@@ -9,7 +10,10 @@ import Config from '../model/config.js'
  *   #火影任务          查看今日任务状态（不执行）
  *   #火影签到推送开启    开启定时推送（每天自动完成并私发结果）
  *   #火影签到推送关闭    关闭定时推送
- * 定时：config.yaml 的 welfareTime（默认每天 08:30），对开启推送的用户自动执行并私聊推送
+ * 定时：
+ *   - welfareTime（默认每天 08:30）：对开启推送的用户自动执行并私聊推送
+ *   - autoSignTime（默认每天 05:00）：每日自动签到，范围由 autoSign 配置
+ *     （off=关闭 self=仅机器人主人 all=所有已绑定用户），结果私发
  */
 export class HyrzWelfare extends plugin {
   constructor () {
@@ -30,6 +34,11 @@ export class HyrzWelfare extends plugin {
         cron: Config.load().welfareTime,
         name: '[hyrz-plugin] 每日福利任务',
         fnc: () => this.dailyTask()
+      },
+      {
+        cron: Config.load().autoSignTime,
+        name: '[hyrz-plugin] 每日自动签到',
+        fnc: () => this.autoSignTask()
       }
     ]
   }
@@ -103,6 +112,49 @@ export class HyrzWelfare extends plugin {
       }
       await new Promise(res => setTimeout(res, 3000))
     }
+  }
+
+  /**
+   * 每日自动签到（config.yaml）
+   * autoSignTime: cron 时间，默认每天 05:00
+   * autoSign: off=关闭 / self=仅机器人主人 / all=所有已绑定用户
+   */
+  async autoSignTask () {
+    const conf = Config.load()
+    const scope = String(conf.autoSign || 'off').toLowerCase()
+    if (scope === 'off') return
+
+    let users = []
+    if (scope === 'all') {
+      users = Store.listAll()
+    } else if (scope === 'self') {
+      // 机器人主人（config/other.yaml 的 masterQQ）
+      const masters = cfg.masterQQ || []
+      users = (Array.isArray(masters) ? masters : [masters]).map(String)
+    }
+    users = [...new Set(users)].filter(qq => Store.get(qq))
+    if (!users.length) {
+      logger.mark('[火影插件]每日自动签到：范围内无可执行用户，跳过')
+      return
+    }
+    logger.mark(`[火影插件]每日自动签到(${scope})：${users.length} 个用户 [${users.join(', ')}]`)
+
+    let okCnt = 0
+    for (const qq of users) {
+      try {
+        const r = await Welfare.runDaily(qq)
+        if (r.error) {
+          logger.error(`[火影插件]自动签到(${qq})失败: ${r.error}`)
+          continue
+        }
+        okCnt++
+        await this.pushUser(qq, r)
+      } catch (err) {
+        logger.error(`[火影插件]自动签到(${qq})异常: ${err.message}`)
+      }
+      await new Promise(res => setTimeout(res, 3000))
+    }
+    logger.mark(`[火影插件]每日自动签到完成：${okCnt}/${users.length} 成功`)
   }
 
   /** 定时任务推送给指定用户（渲染后私发） */

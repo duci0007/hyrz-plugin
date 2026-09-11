@@ -61,6 +61,16 @@ git clone https://github.com/duci0007/hyrz-plugin.git ./plugins/hyrz-plugin
 # 留空则自动读取 Yunzai config/server.yaml 的 url
 # 网页不能刷新或新建二维码；二维码过期后请重新发送 #火影登录
 webLoginBase: ""
+
+# 每日自动签到时间（cron 表达式，秒 分 时 日 月 周，默认每天 05:00）
+autoSignTime: "0 0 5 * * ?"
+
+# 每日自动签到范围:
+#   off  = 关闭
+#   self = 仅机器人主人（config/other.yaml 的 masterQQ）
+#   all  = 所有已绑定用户
+# 执行内容与 #火影签到 一致（签到+任务+领奖），完成后私发结果图
+autoSign: "self"
 ```
 
 ## 目录结构

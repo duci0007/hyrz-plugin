@@ -883,6 +883,19 @@ const Api = {
    * iFlowId=1083576: 查询签到奖励
    * @returns {{iRet:number, sMsg:string, gifts?:Array}} iRet=0 表示签到成功
    */
+  /**
+   * AMS 查询签到奖励（活动576370 iFlowId=1083576）
+   * 复刻小程序流程：该调用会把 ULINK「今日签到」任务标记为已完成（curDone=1），
+   * 必须在正式签到 amsSign(iFlowId=1083547) 之前调用，否则领奖报"请先完成任务后领取"
+   */
+  async amsQuerySign (userId) {
+    const bind = Store.get(userId)
+    if (!bind) return { iRet: -1, sMsg: '未绑定' }
+    const r = await amsPost(1083576, Store.buildCookie(bind))
+    const ok = r?.flowRet?.iRet === '0'
+    return { iRet: ok ? 0 : -1, sMsg: r?.flowRet?.sMsg || '', data: r?.modRet?.jData || null }
+  },
+
   async amsSign (userId) {
     const bind = Store.get(userId)
     if (!bind) return { iRet: -1, sMsg: '未绑定' }
